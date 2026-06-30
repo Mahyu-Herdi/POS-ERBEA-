@@ -133,9 +133,15 @@ export default function App() {
         setNeedsAuth(false);
         await pullFromSheets(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login failed:', err);
-      await popup('alert', 'Login Gagal', "Gagal");
+      let errMsg = err.message || 'Login Gagal';
+      if (err.code === 'auth/unauthorized-domain') {
+        errMsg = 'Domain ini belum diizinkan di Firebase. Buka Firebase Console > Authentication > Settings > Authorized domains, dan tambahkan domain aplikasi ini.';
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        errMsg = 'Login dibatalkan oleh pengguna.';
+      }
+      await popup('alert', errMsg, "Login Gagal");
     } finally {
       setIsLoggingIn(false);
     }
@@ -172,7 +178,7 @@ export default function App() {
       } catch (err: any) {
         console.error(err);
         const msg = err.message || String(err);
-        if (msg.toLowerCase().includes('invalid authentication') || msg.includes('401')) {
+        if (msg.toLowerCase().includes('invalid authentication') || msg.toLowerCase().includes('oauth 2 access token') || msg.includes('401')) {
           await popup('alert', 'Sesi login Google telah kedaluwarsa. Silakan login kembali.', 'Sesi Berakhir');
           await logout();
           useStore.getState().resetStore();
@@ -266,7 +272,7 @@ export default function App() {
     } catch (error: any) {
       console.error(error);
       const msg = error.message || String(error);
-      if (msg.toLowerCase().includes('invalid authentication') || msg.includes('401')) {
+      if (msg.toLowerCase().includes('invalid authentication') || msg.toLowerCase().includes('oauth 2 access token') || msg.includes('401')) {
         if (showPrompt) await popup('alert', 'Sesi login Google telah kedaluwarsa. Silakan login kembali.', 'Sesi Berakhir');
         await logout();
         useStore.getState().resetStore();
@@ -351,7 +357,7 @@ export default function App() {
     } catch (error: any) {
       console.error(error);
       const msg = error.message || String(error);
-      if (msg.toLowerCase().includes('invalid authentication') || msg.includes('401')) {
+      if (msg.toLowerCase().includes('invalid authentication') || msg.toLowerCase().includes('oauth 2 access token') || msg.includes('401')) {
         if (showPrompt) await popup('alert', 'Sesi login Google telah kedaluwarsa. Silakan login kembali.', 'Sesi Berakhir');
         await logout();
         useStore.getState().resetStore();
