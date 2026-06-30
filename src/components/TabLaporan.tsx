@@ -36,6 +36,46 @@ export default function TabLaporan() {
   const totalModal = modalAset + modalBahan;
   const roi = bersih - totalModal;
 
+  const filteredTx = transaksiList.filter(x => {
+    let match = true;
+    if (filterTxMulai && filterTxAkhir) {
+      match = x.tglRaw >= filterTxMulai && x.tglRaw <= filterTxAkhir;
+    }
+    if (searchName) {
+      match = match && x.ident.toLowerCase().includes(searchName.toLowerCase());
+    }
+    return match;
+  });
+
+  // Dynamic filtered values based on active filters (e.g. date range)
+  const kotorFiltered = filteredTx.reduce((acc, tx) => {
+    const labelTipe = tx.tipe || 'Penjualan';
+    if (labelTipe === 'Penjualan' || labelTipe === 'Pelunasan Kasbon') {
+      return acc + tx.total;
+    }
+    return acc;
+  }, 0);
+
+  const opFiltered = filteredTx.reduce((acc, tx) => {
+    if (tx.tipe === 'Pengeluaran') {
+      return acc + tx.total;
+    }
+    return acc;
+  }, 0);
+
+  const stokFiltered = filteredTx.reduce((acc, tx) => {
+    if (tx.tipe === 'Belanja Stok') {
+      return acc + tx.total;
+    }
+    return acc;
+  }, 0);
+
+  const hppFiltered = filteredTx.reduce((acc, tx) => {
+    return acc + (tx.hppTotal || 0);
+  }, 0);
+
+  const bersihFiltered = kotorFiltered - opFiltered - stokFiltered - hppFiltered;
+
   const tambahPengeluaran = async () => {
     const nom = parseAngka(nominalPengeluaran);
     if (!namaPengeluaran || nom <= 0) {
@@ -95,17 +135,6 @@ export default function TabLaporan() {
       }
     }
   };
-
-  const filteredTx = transaksiList.filter(x => {
-    let match = true;
-    if (filterTxMulai && filterTxAkhir) {
-      match = x.tglRaw >= filterTxMulai && x.tglRaw <= filterTxAkhir;
-    }
-    if (searchName) {
-      match = match && x.ident.toLowerCase().includes(searchName.toLowerCase());
-    }
-    return match;
-  });
 
   let sumIn = 0;
   let sumOut = 0;
@@ -219,13 +248,16 @@ export default function TabLaporan() {
       </div>
 
       <div className="clay-card">
-        <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Neraca Laba Bersih Komprehensif</h3>
-        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {kotor.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {hppTerjual.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {stok.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {op.toLocaleString('id-ID')}</strong></div>
+        <h3 style={{ color: 'var(--text-muted)', marginBottom: '5px' }}>Neraca Laba Bersih Komprehensif</h3>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>
+          Periode: {filterTxMulai && filterTxAkhir ? `${filterTxMulai} s/d ${filterTxAkhir}` : 'Semua Waktu'}
+        </p>
+        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {kotorFiltered.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {hppFiltered.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {stokFiltered.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {opFiltered.toLocaleString('id-ID')}</strong></div>
         <hr style={{ border: 0, borderTop: '2px solid rgba(163,177,198,0.3)', margin: '15px 0' }} />
-        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersih.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersihFiltered.toLocaleString('id-ID')}</strong></div>
       </div>
 
       <div className="clay-card" style={{ border: '1px solid var(--blue)' }}>
