@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from './store';
-import { initAuth, googleSignIn, getAccessToken, logout } from './lib/firebase';
-import { createSpreadsheet, uploadLogoToDrive, updateSheetData, clearSheetData, getSheetData, getOrCreateAppFolder, findSpreadsheetInFolder } from './lib/googleApi';
 import { CheckCircle2, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppModal } from './components/ModalContext';
@@ -18,10 +16,7 @@ export default function App() {
     return localStorage.getItem('activeTab') || 'kasir';
   });
   const [activeSubTab, setActiveSubTab] = useState('sub-sistem');
-  const [needsAuth, setNeedsAuth] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { popup } = useAppModal();
   
@@ -80,81 +75,34 @@ export default function App() {
   useEffect(() => {
     document.body.classList.add('dark-mode');
     
-    const unsubscribe = initAuth(
-      (user, token) => {
-        setNeedsAuth(false);
-        setUser(user);
-      },
-      () => {
-        setNeedsAuth(true);
-        setUser(null);
-        useStore.getState().resetStore();
-      }
-    );
-    return () => unsubscribe();
+    if (GAS_URL) {
+      pullFromSheets(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (user) {
-      pullFromSheets(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
     const handleOnline = () => {
-      if (user) {
+      if (GAS_URL) {
         syncToSheets(false);
       }
     };
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-    if (user) {
+    if (GAS_URL) {
       // Auto-sync ke cloud 5 detik setelah ada perubahan data lokal
       const timeout = setTimeout(() => {
         syncToSheets(false);
       }, 5000);
       return () => clearTimeout(timeout);
     }
-  }, [toko.nama, toko.logoDriveId, menu, stokData, transaksiList, hutangList, bebanAktif, keuangan, user]);
-
-  const handleLogin = async () => {
-    setIsLoggingIn(true);
-    try {
-      const result = await googleSignIn();
-      if (result) {
-        setUser(result.user);
-        setNeedsAuth(false);
-        await pullFromSheets(false);
-      }
-    } catch (err: any) {
-      console.error('Login failed:', err);
-      let errMsg = err.message || 'Login Gagal';
-      if (err.code === 'auth/unauthorized-domain') {
-        errMsg = 'Domain ini belum diizinkan di Firebase. Buka Firebase Console > Authentication > Settings > Authorized domains, dan tambahkan domain aplikasi ini.';
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        errMsg = 'Login dibatalkan oleh pengguna.';
-      }
-      await popup('alert', errMsg, "Login Gagal");
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    if (await popup('confirm', 'Yakin ingin logout? Data lokal akan dihapus dan harus sync dari cloud saat login kembali.', 'Konfirmasi Logout')) {
-      await logout();
-      useStore.getState().resetStore();
-      setUser(null);
-      setNeedsAuth(true);
-    }
-  };
+  }, [toko.nama, menu, stokData, transaksiList, hutangList, bebanAktif, keuangan]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -165,306 +113,100 @@ export default function App() {
       setToko({ logoBase64: event.target?.result as string });
     };
     reader.readAsDataURL(file);
-
-    const token = await getAccessToken();
-    if (token) {
-      try {
-        setIsSaving(true);
-        const folderId = await getOrCreateAppFolder(token);
-        const fileId = await uploadLogoToDrive(file, folderId, token);
-        setToko({ logoDriveId: fileId });
-        await popup('alert', 'Logo berhasil diunggah ke Google Drive dan tersimpan permanen!', 'Berhasil');
-        await syncToSheets(false); 
-      } catch (err: any) {
-        console.error(err);
-        const msg = err.message || String(err);
-        if (msg.toLowerCase().includes('invalid authentication') || msg.toLowerCase().includes('oauth 2 access token') || msg.includes('401')) {
-          await popup('alert', 'Sesi login Google telah kedaluwarsa. Silakan login kembali.', 'Sesi Berakhir');
-          await logout();
-          useStore.getState().resetStore();
-          setUser(null);
-          setNeedsAuth(true);
-        } else {
-          await popup('alert', `Gagal mengunggah logo: ${msg}`, "Gagal");
-        }
-      } finally {
-        setIsSaving(false);
-      }
-    } else {
-      await popup('alert', 'Harap login Google terlebih dahulu untuk menyimpan ke Drive.', "Gagal");
-    }
   };
 
-  const checkOrCreateSpreadsheet = async (token: string, folderId: string, currentSheetId: string | null) => {
-    let sheetId = currentSheetId;
-    let isValid = false;
 
-    if (sheetId) {
-      try {
-        await getSheetData(sheetId, 'Toko!A1', token);
-        isValid = true;
-      } catch (err: any) {
-        if (err.message?.toLowerCase().includes('not found') || err.message?.includes('404')) {
-          isValid = false;
-        }
-      }
-    }
-
-    if (!isValid) {
-      sheetId = await findSpreadsheetInFolder(folderId, token);
-      if (!sheetId) {
-        sheetId = await createSpreadsheet(`Data POS - ${toko.nama || 'Warkop'}`, folderId, token);
-      }
-      if (sheetId) {
-        setToko({ spreadsheetId: sheetId });
-        localStorage.setItem('spreadsheetId', sheetId);
-      }
-    }
-    
-    return sheetId;
-  };
+const GAS_URL = "https://script.google.com/macros/s/AKfycbykgUesJWL7750kB7jpxXlw_x-2Gv32b2gZoEuxqnk03vE34q-YL5GKrKBpd7kNbsMS/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
 
   const syncToSheets = async (showPrompt = true) => {
-    const token = await getAccessToken();
-    if (!token) return;
+    if (!GAS_URL) {
+      if (showPrompt) await popup('alert', 'URL Apps Script belum diatur di dalam kode sumber.', 'Gagal');
+      return;
+    }
 
     try {
       if (showPrompt) setIsSaving(true);
       
-      const folderId = await getOrCreateAppFolder(token);
-      let sheetId = toko.spreadsheetId || localStorage.getItem('spreadsheetId');
-      
-      sheetId = await checkOrCreateSpreadsheet(token, folderId, sheetId);
-      if (!sheetId) throw new Error("Gagal membuat atau menemukan spreadsheet.");
-
-      try {
-        const tokoData = [
-          ['Nama Toko', 'Logo ID (Drive)'],
-          [toko.nama, toko.logoDriveId || '']
-        ];
-        await updateSheetData(sheetId, 'Toko!A1:B2', tokoData, token);
-      } catch(e) { console.warn(e); }
-      
-      try {
-        const menuData = [['ID', 'Nama', 'Harga']];
-        menu.forEach(m => menuData.push([m.id, m.name, m.harga.toString()]));
-        await clearSheetData(sheetId, 'Menu!A1:C1000', token);
-        await updateSheetData(sheetId, 'Menu!A1:C1000', menuData, token);
-      } catch(e) { console.warn(e); }
-
       const state = useStore.getState();
+      const payload = {
+        type: 'SYNC_ALL',
+        payload: {
+          toko: state.toko,
+          menu: state.menu,
+          stokData: state.stokData,
+          bebanAktif: state.bebanAktif,
+          keuangan: state.keuangan,
+          transaksiList: state.transaksiList
+        }
+      };
 
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
+      
+      const text = await response.text();
+      let result;
       try {
-        const stokArr = [['ID', 'Nama', 'Sisa', 'Unit', 'Harga Per Unit']];
-        state.stokData.forEach(s => stokArr.push([s.id, s.nama, s.sisa.toString(), s.unit, s.hargaPerUnit.toString()]));
-        await clearSheetData(sheetId, 'Stok!A1:E1000', token);
-        await updateSheetData(sheetId, 'Stok!A1:E1000', stokArr, token);
-      } catch(e) { console.warn(e); }
+        result = JSON.parse(text);
+      } catch (e) {
+        throw new Error("Apps Script mengembalikan error non-JSON. Pastikan Spreadsheet ID di KODE_GS_APPS_SCRIPT.js sudah benar dan di-deploy ulang. Detail: " + text.substring(0, 100));
+      }
 
-      try {
-        const asetArr = [['Nama', 'Harga', 'Umur (Bulan)']];
-        state.bebanAktif.aset.forEach(a => asetArr.push([a.nama, a.harga.toString(), a.umur.toString()]));
-        await clearSheetData(sheetId, 'BebanAset!A1:C1000', token);
-        await updateSheetData(sheetId, 'BebanAset!A1:C1000', asetArr, token);
-      } catch(e) { console.warn(e); }
-
-      try {
-        const opsArr = [['Nama', 'Biaya Bulanan']];
-        state.bebanAktif.ops.forEach(o => opsArr.push([o.nama, o.biaya.toString()]));
-        await clearSheetData(sheetId, 'BebanOps!A1:B1000', token);
-        await updateSheetData(sheetId, 'BebanOps!A1:B1000', opsArr, token);
-      } catch(e) { console.warn(e); }
-
-      try {
-        const targetArr = [['Target Porsi', state.bebanAktif.target.toString()]];
-        await updateSheetData(sheetId, 'Target!A1:B1', targetArr, token);
-      } catch(e) { console.warn(e); }
-
-      try {
-        const keuArr = [
-          ['Masuk', 'Keluar Op', 'Keluar Stok', 'Prive', 'Modal Bahan', 'HPP Terjual'],
-          [
-            state.keuangan.masuk.toString(),
-            state.keuangan.keluarOp.toString(),
-            state.keuangan.keluarStok.toString(),
-            state.keuangan.prive.toString(),
-            state.keuangan.modalBahan.toString(),
-            (state.keuangan.hppTerjual || 0).toString()
-          ]
-        ];
-        await updateSheetData(sheetId, 'Keuangan!A1:F2', keuArr, token);
-      } catch(e) { console.warn(e); }
-
-      try {
-        const txArr = [['Tgl', 'TglRaw', 'Tipe', 'Ident', 'Total', 'Bayar', 'Metode']];
-        state.transaksiList.forEach(t => txArr.push([t.tgl, t.tglRaw, t.tipe, t.ident, t.total.toString(), t.bayar.toString(), t.metode]));
-        await clearSheetData(sheetId, 'Transaksi!A1:G5000', token);
-        await updateSheetData(sheetId, 'Transaksi!A1:G5000', txArr, token);
-      } catch(e) { console.warn(e); }
-
-      if (showPrompt) await popup('alert', 'Berhasil! Data telah disinkronisasikan ke Google Sheets.', "Sukses");
+      if (result.status === 'success') {
+        if (showPrompt) await popup('alert', 'Berhasil! Data telah disinkronisasikan ke Google Sheets via Apps Script.', 'Sukses');
+      } else {
+        throw new Error(result.message || 'Unknown error from Apps Script');
+      }
     } catch (error: any) {
       console.error(error);
-      const msg = error.message || String(error);
-      if (msg.toLowerCase().includes('invalid authentication') || msg.toLowerCase().includes('oauth 2 access token') || msg.includes('401')) {
-        if (showPrompt) await popup('alert', 'Sesi login Google telah kedaluwarsa. Silakan login kembali.', 'Sesi Berakhir');
-        await logout();
-        useStore.getState().resetStore();
-        setUser(null);
-        setNeedsAuth(true);
-      } else {
-        if (showPrompt) await popup('alert', `Gagal sinkronisasi: ${msg}`, "Gagal");
-      }
+      if (showPrompt) await popup('alert', `Gagal sinkronisasi: ${error.message}`, "Gagal");
     } finally {
       if (showPrompt) setIsSaving(false);
     }
   };
 
   const pullFromSheets = async (showPrompt = true) => {
-    const token = await getAccessToken();
-    if (!token) return;
+    if (!GAS_URL) {
+      if (showPrompt) await popup('alert', 'URL Apps Script belum diatur di dalam kode sumber.', 'Gagal');
+      return;
+    }
     
     try {
       if (showPrompt) setIsSaving(true);
 
-      const folderId = await getOrCreateAppFolder(token);
-      let sheetId = toko.spreadsheetId || localStorage.getItem('spreadsheetId');
+      const payload = { type: 'PULL_ALL' };
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
       
-      sheetId = await checkOrCreateSpreadsheet(token, folderId, sheetId);
-      if (!sheetId) throw new Error("Gagal membuat atau menemukan spreadsheet.");
-
-      const data = await getSheetData(sheetId, 'Toko!A1:B2', token);
-      if (data && data.length > 1) {
-        setToko({ nama: data[1][0], logoDriveId: data[1][1] });
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        throw new Error("Apps Script mengembalikan error non-JSON. Pastikan Spreadsheet ID di KODE_GS_APPS_SCRIPT.js sudah benar dan di-deploy ulang. Detail: " + text.substring(0, 100));
       }
 
-      try {
-        const menuRes = await getSheetData(sheetId, 'Menu!A1:C1000', token);
-        if (menuRes && menuRes.length > 1) {
-          const newMenu = menuRes.slice(1).map((row: any) => ({
-            id: row[0],
-            name: row[1],
-            harga: parseFloat(row[2]) || 0
-          }));
-          useStore.getState().setFullState({ menu: newMenu });
-        } else if (menuRes) {
-          useStore.getState().setFullState({ menu: [] });
-        }
-      } catch (e) { console.log('No Menu sheet or empty'); }
-
-      try {
-        let stokRes = await getSheetData(sheetId, 'Stok!A1:E1000', token);
-        if (!stokRes) {
-          // Fallback to old 'Aset' sheet name for backwards compatibility
-          stokRes = await getSheetData(sheetId, 'Aset!A1:E1000', token);
-        }
-        if (stokRes && stokRes.length > 1) {
-          const newStok = stokRes.slice(1).map((row: any) => ({
-            id: row[0],
-            nama: row[1],
-            sisa: parseFloat(row[2]) || 0,
-            unit: row[3] || '',
-            hargaPerUnit: parseFloat(row[4]) || 0
-          }));
-          useStore.getState().setStokData(newStok);
-        } else if (stokRes) {
-          useStore.getState().setStokData([]);
-        }
-      } catch (e) { console.log('No Stok/Aset sheet or empty'); }
-
-      try {
-        let newAset: any[] = [];
-        let newOps: any[] = [];
-        let newTarget = 1000;
+      if (result.status === 'success' && result.data) {
+        const d = result.data;
+        if (d.toko) setToko({ nama: d.toko.nama, logoBase64: d.toko.logoBase64 });
+        if (d.menu) useStore.getState().setFullState({ menu: d.menu });
+        if (d.stokData) useStore.getState().setStokData(d.stokData);
+        if (d.bebanAktif) useStore.getState().updateBebanAktif(d.bebanAktif);
+        if (d.keuangan) useStore.getState().updateKeuangan(d.keuangan);
+        if (d.transaksiList) useStore.getState().setFullState({ transaksiList: d.transaksiList });
         
-        try {
-          const asetRes = await getSheetData(sheetId, 'BebanAset!A1:C1000', token);
-          if (asetRes && asetRes.length > 1) {
-            newAset = asetRes.slice(1).map((row: any) => ({
-              nama: row[0],
-              harga: parseFloat(row[1]) || 0,
-              umur: parseFloat(row[2]) || 1
-            }));
-          }
-        } catch(e) {}
-
-        try {
-          const opsRes = await getSheetData(sheetId, 'BebanOps!A1:B1000', token);
-          if (opsRes && opsRes.length > 1) {
-            newOps = opsRes.slice(1).map((row: any) => ({
-              nama: row[0],
-              biaya: parseFloat(row[1]) || 0
-            }));
-          }
-        } catch(e) {}
-
-        try {
-          const targetRes = await getSheetData(sheetId, 'Target!A1:B1', token);
-          if (targetRes && targetRes.length > 0) {
-             newTarget = parseFloat(targetRes[0][1]) || 1000;
-          }
-        } catch(e) {}
-
-        let totalAsetBulan = 0;
-        newAset.forEach(a => totalAsetBulan += a.harga / a.umur);
-        let totalOpsBulan = 0;
-        newOps.forEach(o => totalOpsBulan += o.biaya);
-        const bebanPerPorsi = newTarget > 0 ? (totalAsetBulan + totalOpsBulan) / newTarget : 0;
-
-        useStore.getState().updateBebanAktif({ 
-          aset: newAset, 
-          ops: newOps, 
-          target: newTarget, 
-          perPorsi: Math.round(bebanPerPorsi) 
-        });
-      } catch (e) { console.log('Error pulling Beban data'); }
-
-      try {
-        const keuRes = await getSheetData(sheetId, 'Keuangan!A1:F2', token);
-        if (keuRes && keuRes.length > 1) {
-          useStore.getState().updateKeuangan({
-            masuk: parseFloat(keuRes[1][0]) || 0,
-            keluarOp: parseFloat(keuRes[1][1]) || 0,
-            keluarStok: parseFloat(keuRes[1][2]) || 0,
-            prive: parseFloat(keuRes[1][3]) || 0,
-            modalBahan: parseFloat(keuRes[1][4]) || 0,
-            hppTerjual: parseFloat(keuRes[1][5]) || 0,
-          });
-        }
-      } catch (e) { console.log('No Keuangan sheet'); }
-
-      try {
-        const txRes = await getSheetData(sheetId, 'Transaksi!A1:G5000', token);
-        if (txRes && txRes.length > 1) {
-          const newTx = txRes.slice(1).map((row: any) => ({
-            tgl: row[0],
-            tglRaw: row[1],
-            tipe: row[2],
-            ident: row[3],
-            total: parseFloat(row[4]) || 0,
-            bayar: parseFloat(row[5]) || 0,
-            metode: row[6],
-            items: [] // Can't easily retrieve full items from simple rows, but this fulfills basic history
-          }));
-          useStore.getState().setFullState({ transaksiList: newTx });
-        } else if (txRes) {
-          useStore.getState().setFullState({ transaksiList: [] });
-        }
-      } catch (e) { console.log('No Tx sheet or empty'); }
-
-      if (showPrompt) await popup('alert', 'Data berhasil ditarik dari Spreadsheet!', "Berhasil");
+        if (showPrompt) await popup('alert', 'Data berhasil ditarik dari Spreadsheet!', "Berhasil");
+      } else {
+        throw new Error(result.message || 'Unknown error from Apps Script');
+      }
     } catch (error: any) {
       console.error(error);
-      const msg = error.message || String(error);
-      if (msg.toLowerCase().includes('invalid authentication') || msg.toLowerCase().includes('oauth 2 access token') || msg.includes('401')) {
-        if (showPrompt) await popup('alert', 'Sesi login Google telah kedaluwarsa. Silakan login kembali.', 'Sesi Berakhir');
-        await logout();
-        useStore.getState().resetStore();
-        setUser(null);
-        setNeedsAuth(true);
-      } else {
-        if (showPrompt) await popup('alert', `Gagal menarik data: ${msg}`, "Gagal");
-      }
+      if (showPrompt) await popup('alert', `Gagal menarik data: ${error.message}`, "Gagal");
     } finally {
       if (showPrompt) setIsSaving(false);
     }
@@ -536,19 +278,16 @@ export default function App() {
                 >
                   <h3 style={{ marginBottom: '15px', textAlign: 'center', color: 'var(--text-main)' }}>Pengaturan Identitas Toko & Integrasi Google Sheets</h3>
               
-              {needsAuth ? (
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                  <button className="btn bg-blue" onClick={handleLogin} disabled={isLoggingIn} style={{ width: '100%', marginBottom: '10px' }}>
-                    {isLoggingIn ? 'Memproses...' : 'Sign in with Google untuk Cloud Sync'}
-                  </button>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Login diperlukan untuk menyimpan data ke Google Sheets & Drive.</p>
+              <div className="bg-dim" style={{ padding: '15px', borderRadius: '15px', marginBottom: '20px' }}>
+                <h4 style={{ fontSize: '13px', marginBottom: '10px' }}>Integrasi Google Sheets (Apps Script)</h4>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                  Aplikasi ini menggunakan Apps Script Web App untuk menyimpan data langsung ke Google Sheets secara gratis.
+                  URL Web App telah ditanam (hardcoded) di dalam sistem aplikasi.
+                </p>
+                <div style={{ marginBottom: '15px' }}>
+                  <a href="/KODE_GS_APPS_SCRIPT.js" target="_blank" className="text-blue" style={{ fontSize: '11px', textDecoration: 'underline' }}>Lihat & Copy Kode .gs (Template)</a>
                 </div>
-              ) : (
-                <div style={{ textAlign: 'center', marginBottom: '20px', fontSize: '13px', color: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                  <CheckCircle2 size={16} /> Tersambung sebagai: {user?.email} 
-                  <button onClick={handleLogout} style={{ marginLeft: '10px', color: 'var(--red)', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Logout</button>
-                </div>
-              )}
+              </div>
 
               <div className="bg-dim" style={{ padding: '15px', borderRadius: '15px', marginBottom: '20px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Nama Toko</label>
@@ -561,18 +300,14 @@ export default function App() {
                   style={{ margin: 0, marginBottom: '15px', width: '100%' }}
                 />
 
-                <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Upload Logo Toko (Tersimpan ke Google Drive)</label>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Upload Logo Toko (Lokal)</label>
                 <div style={{display: 'flex', gap: '10px'}}>
                   <input type="file" accept="image/*" className="btn-input" style={{ fontSize: '12px', margin: 0, flex: 1 }} onChange={handleLogoUpload} />
-                  <button className="btn bg-green" onClick={() => syncToSheets(true)} style={{padding: '12px 20px', margin: 0}}>Simpan</button>
                 </div>
                 
                 {toko.logoBase64 && (
                   <div style={{ textAlign: 'center', marginTop: '15px' }}>
                     <img src={toko.logoBase64} style={{ width: '80px', borderRadius: '10px', boxShadow: 'var(--clay-shadow-out)' }} alt="Logo" />
-                    <p style={{fontSize: '11px', color: 'var(--green)', marginTop: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'}}>
-                      <Check size={12} /> Logo Tersimpan Permanen
-                    </p>
                   </div>
                 )}
               </div>

@@ -32,6 +32,7 @@ export interface TokoData {
   logoBase64: string | null;
   logoDriveId?: string;
   spreadsheetId?: string;
+  gasUrl?: string;
 }
 
 interface PosState {
