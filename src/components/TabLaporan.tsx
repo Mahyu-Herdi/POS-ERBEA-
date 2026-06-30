@@ -23,14 +23,18 @@ export default function TabLaporan() {
 
   const parseAngka = (val: string) => parseInt(val.replace(/\D/g, ''), 10) || 0;
 
-  // Sisa kas laci is always global physical money
-  const sisaKasLaci = keuangan.masuk - keuangan.keluarOp - keuangan.keluarStok - keuangan.prive;
+  const kotor = keuangan.masuk;
+  const op = keuangan.keluarOp;
+  const stok = keuangan.keluarStok;
+  const hppTerjual = keuangan.hppTerjual || 0;
+  const bersih = kotor - op - stok - hppTerjual;
+
+  const sisaKasLaci = kotor - op - stok - keuangan.prive;
 
   const modalAset = bebanAktif.aset.reduce((acc, a) => acc + a.harga, 0);
   const modalBahan = keuangan.modalBahan;
   const totalModal = modalAset + modalBahan;
-  const globalBersih = keuangan.masuk - keuangan.keluarOp - keuangan.keluarStok - (keuangan.hppTerjual || 0);
-  const roi = globalBersih - totalModal;
+  const roi = bersih - totalModal;
 
   const tambahPengeluaran = async () => {
     const nom = parseAngka(nominalPengeluaran);
@@ -105,27 +109,17 @@ export default function TabLaporan() {
 
   let sumIn = 0;
   let sumOut = 0;
-  let rangeKotor = 0;
-  let rangeHpp = 0;
-  let rangeStok = 0;
-  let rangeOp = 0;
 
   filteredTx.forEach(tx => {
     const labelTipe = tx.tipe || 'Penjualan';
     if (labelTipe === 'Penjualan' || labelTipe === 'Pelunasan Kasbon') {
       sumIn += tx.total;
-      rangeKotor += tx.total;
-      rangeHpp += (tx.hppTotal || 0);
     } else if (labelTipe === 'Pengeluaran' || labelTipe === 'Prive') {
       sumOut += tx.total;
-      if (labelTipe === 'Pengeluaran') rangeOp += tx.total;
     } else if (labelTipe === 'Belanja Stok') {
       sumOut += tx.total;
-      rangeStok += tx.total;
     }
   });
-
-  const rangeBersih = rangeKotor - rangeOp - rangeStok - rangeHpp;
 
   const filteredHutang = hutangList.filter(x => {
     let match = true;
@@ -141,13 +135,13 @@ export default function TabLaporan() {
   return (
     <>
       <div className="clay-card">
-        <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Neraca Laba Bersih Komprehensif (Rentang Waktu)</h3>
-        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {rangeKotor.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {rangeHpp.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {rangeStok.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {rangeOp.toLocaleString('id-ID')}</strong></div>
+        <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Neraca Laba Bersih Komprehensif</h3>
+        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {kotor.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {hppTerjual.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {stok.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {op.toLocaleString('id-ID')}</strong></div>
         <hr style={{ border: 0, borderTop: '2px solid rgba(163,177,198,0.3)', margin: '15px 0' }} />
-        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {rangeBersih.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersih.toLocaleString('id-ID')}</strong></div>
       </div>
 
       <div className="clay-card">
