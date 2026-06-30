@@ -1,6 +1,13 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
-import firebaseConfig from '../../firebase-applet-config.json';
+const firebaseConfig = {
+  apiKey: "AIzaSyC2lePuSFDem2NIRvx5fhtdncmkUiJiO5Y",
+  authDomain: "poserbea-8698a.firebaseapp.com",
+  projectId: "poserbea-8698a",
+  storageBucket: "poserbea-8698a.firebasestorage.app",
+  messagingSenderId: "459029312014",
+  appId: "1:459029312014:web:a90c1dd5b541db629b825f"
+};
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

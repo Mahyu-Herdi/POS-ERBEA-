@@ -1,6 +1,9 @@
-  "apiKey": "AIzaSyC2lePuSFDem2NIRvx5fhtdncmkUiJiO5Y",
-  "authDomain": "poserbea-8698a.firebaseapp.com",
-  "projectId": "poserbea-8698a",
-  "storageBucket": "poserbea-8698a.firebasestorage.app",
-  "messagingSenderId": "459029312014",
-  "appId": "1:459029312014:web:a90c1dd5b541db629b825f"
+{
+  "projectId": "sage-aileron-1rwfn",
+  "appId": "1:889744883799:web:cb22c9f3acb084e02ca312",
+  "apiKey": "AIzaSyDAioGif5ZEKR1LHbgumzQqfDWAFe_DlO4",
+  "authDomain": "sage-aileron-1rwfn.firebaseapp.com",
+  "storageBucket": "sage-aileron-1rwfn.firebasestorage.app",
+  "messagingSenderId": "889744883799",
+  "measurementId": ""
+}
