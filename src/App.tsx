@@ -102,12 +102,22 @@ export default function App() {
         body: JSON.stringify(payload)
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+      
       const text = await response.text();
+      const contentType = response.headers.get("content-type");
+      
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Apps Script tidak mengembalikan JSON. Cek deployment.");
+      }
+
       let result;
       try {
         result = JSON.parse(text);
       } catch (e) {
-        throw new Error("Apps Script mengembalikan error non-JSON. Detail: " + text.substring(0, 100));
+        throw new Error("Gagal parsing JSON dari Apps Script.");
       }
 
       if (result.status === 'success') {
@@ -140,12 +150,22 @@ export default function App() {
         body: JSON.stringify(payload)
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+      
       const text = await response.text();
+      const contentType = response.headers.get("content-type");
+      
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Apps Script tidak mengembalikan JSON. Cek deployment.");
+      }
+
       let result;
       try {
         result = JSON.parse(text);
       } catch (e) {
-        throw new Error("Apps Script mengembalikan error non-JSON. Detail: " + text.substring(0, 100));
+        throw new Error("Gagal parsing JSON dari Apps Script.");
       }
 
       if (result.status === 'success' && result.data) {

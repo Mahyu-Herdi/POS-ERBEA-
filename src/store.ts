@@ -37,6 +37,15 @@ export interface TokoData {
   gasUrl?: string;
 }
 
+export interface HutangItem {
+  id: number;
+  nama: string;
+  nominal: number;
+  sisa: number;
+  pembayaran: { tgl: string; jumlah: number }[];
+  tglRaw: string;
+}
+
 interface PosState {
   menu: MenuItem[];
   cart: CartItem[];
@@ -47,7 +56,7 @@ interface PosState {
   mejaAktif: Meja[];
   totalMeja: number;
   transaksiList: any[];
-  hutangList: any[];
+  hutangList: HutangItem[];
   keuangan: { masuk: number; keluarOp: number; keluarStok: number; prive: number; modalBahan: number; hppTerjual: number };
   bebanAktif: { aset: any[]; ops: any[]; target: number; perPorsi: number };
   tempResep: any[];
@@ -71,8 +80,8 @@ interface PosState {
   
   addTransaksi: (tx: any) => void;
   deleteTransaksi: (txIndex: number) => void;
-  addHutang: (hutang: any) => void;
-  updateHutang: (hutangList: any[]) => void;
+  addHutang: (hutang: HutangItem) => void;
+  updateHutang: (hutangList: HutangItem[]) => void;
   
   updateKeuangan: (k: Partial<PosState['keuangan']>) => void;
   updateBebanAktif: (b: Partial<PosState['bebanAktif']>) => void;
@@ -163,7 +172,7 @@ export const useStore = create<PosState>()(
           if (hutangIdx >= 0) newHutangList.splice(hutangIdx, 1);
         } else if (tx.tipe === 'Pelunasan Kasbon') {
           newKeuangan.masuk -= tx.total;
-          newHutangList.push({ id: Date.now(), nama: tx.ident, nominal: tx.total, tglRaw: tx.tglRaw });
+          newHutangList.push({ id: Date.now(), nama: tx.ident, nominal: tx.total, sisa: tx.total, pembayaran: [], tglRaw: tx.tglRaw });
         } else if (tx.tipe === 'Pengeluaran') {
           newKeuangan.keluarOp -= tx.total;
         } else if (tx.tipe === 'Prive') {
@@ -194,11 +203,17 @@ export const useStore = create<PosState>()(
         const newTransaksiList = [...state.transaksiList];
         newTransaksiList.splice(txIndex, 1);
         
+        let newStokHistory = [...state.stokHistory];
+        if (tx.id) {
+          newStokHistory = newStokHistory.filter(h => h.txId !== tx.id);
+        }
+        
         return {
           transaksiList: newTransaksiList,
           keuangan: newKeuangan,
           hutangList: newHutangList,
-          stokData: newStokData
+          stokData: newStokData,
+          stokHistory: newStokHistory
         };
       }),
       addHutang: (hutang) => set((state) => ({ hutangList: [...state.hutangList, hutang] })),

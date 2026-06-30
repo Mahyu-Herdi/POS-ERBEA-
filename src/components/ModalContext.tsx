@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
-type ModalType = 'alert' | 'confirm' | 'prompt_text' | 'prompt_num' | 'print_confirm';
+type ModalType = 'alert' | 'confirm' | 'prompt_text' | 'prompt_num' | 'prompt_float' | 'print_confirm';
 
 interface ModalState {
   isOpen: boolean;
@@ -48,6 +48,10 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return parseInt(String(str).replace(/\D/g, ''), 10) || 0;
   };
 
+  const parseFloatCustom = (str: string) => {
+    return parseFloat(String(str).replace(/[^0-9.]/g, '')) || 0;
+  };
+
   const formatUang = (val: string) => {
     let clean = String(val).replace(/\D/g, '');
     if (clean === '') return '';
@@ -57,6 +61,8 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (modal.type === 'prompt_num') {
       setInputValue(formatUang(e.target.value));
+    } else if (modal.type === 'prompt_float') {
+      setInputValue(e.target.value.replace(/[^0-9.]/g, ''));
     } else {
       setInputValue(e.target.value);
     }
@@ -65,6 +71,8 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const handleConfirm = () => {
     if (modal.type === 'prompt_num') {
       handleClose(parseAngka(inputValue));
+    } else if (modal.type === 'prompt_float') {
+      handleClose(parseFloatCustom(inputValue));
     } else if (modal.type === 'prompt_text') {
       handleClose(inputValue.trim());
     } else {
@@ -82,13 +90,13 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             {modal.msg}
           </p>
           
-          {(modal.type === 'prompt_text' || modal.type === 'prompt_num') && (
+          {(modal.type === 'prompt_text' || modal.type === 'prompt_num' || modal.type === 'prompt_float') && (
             <input
               type="text"
-              inputMode={modal.type === 'prompt_num' ? 'numeric' : 'text'}
+              inputMode={modal.type === 'prompt_num' || modal.type === 'prompt_float' ? 'decimal' : 'text'}
               className="btn-input"
               style={{ textAlign: 'center', fontSize: '18px', display: 'block' }}
-              placeholder={modal.type === 'prompt_num' ? 'Ketik nominal angka...' : 'Ketik di sini...'}
+              placeholder={modal.type === 'prompt_num' ? 'Ketik nominal angka...' : modal.type === 'prompt_float' ? 'Ketik angka...' : 'Ketik di sini...'}
               value={inputValue}
               onChange={handleInput}
               autoFocus

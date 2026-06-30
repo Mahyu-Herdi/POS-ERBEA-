@@ -112,17 +112,29 @@ export default function TabLaporan() {
   };
 
   const bayarHutang = async (idx: number) => {
-    if (await popup('confirm', `Tandai lunas hutang ${hutangList[idx].nama}?`, "Bayar Kasbon")) {
-      const nominal = hutangList[idx].nominal;
-      updateKeuangan({ masuk: keuangan.masuk + nominal });
+    const h = hutangList[idx];
+    const jumlah = await popup('prompt_float', `Sisa hutang ${h.nama}: Rp ${h.sisa.toLocaleString('id-ID')}.\nBayar berapa?`, "Bayar Kasbon");
+    
+    if (jumlah && jumlah > 0 && jumlah <= h.sisa) {
+      updateKeuangan({ masuk: keuangan.masuk + jumlah });
       
-      const txRecord = { tgl: new Date().toLocaleString('id-ID'), tglRaw: getToday(), tipe: 'Pelunasan Kasbon', ident: hutangList[idx].nama, items: [], total: nominal, bayar: nominal, metode: 'Cash' };
+      const txRecord = { tgl: new Date().toLocaleString('id-ID'), tglRaw: getToday(), tipe: 'Pelunasan Kasbon', ident: h.nama, items: [], total: jumlah, bayar: jumlah, metode: 'Cash' };
       addTransaksi(txRecord);
       
       const newHutang = [...hutangList];
-      newHutang.splice(idx, 1);
+      newHutang[idx] = {
+        ...h,
+        sisa: h.sisa - jumlah,
+        pembayaran: [...h.pembayaran, { tgl: getToday(), jumlah }]
+      };
+      
+      if (newHutang[idx].sisa <= 0) {
+        newHutang.splice(idx, 1);
+      }
       updateHutang(newHutang);
-      await popup('alert', "Hutang lunas & uang kas masuk diperbarui!", "Lunas");
+      await popup('alert', "Pembayaran hutang berhasil!", "Sukses");
+    } else if (jumlah > h.sisa) {
+      await popup('alert', "Jumlah bayar melebihi sisa hutang!", "Gagal");
     }
   };
 
@@ -240,10 +252,10 @@ export default function TabLaporan() {
                 return (
                   <tr key={h.id}>
                     <td><strong>{h.nama}</strong></td>
-                    <td className="text-red" style={{ fontWeight: 600 }}>Rp {h.nominal.toLocaleString('id-ID')}</td>
+                    <td className="text-red" style={{ fontWeight: 600 }}>Rp {h.sisa.toLocaleString('id-ID')}</td>
                     <td style={{ textAlign: 'right' }}>
                       <button className="btn bg-green" style={{ padding: '6px 12px', borderRadius: '10px' }} onClick={() => bayarHutang(originalIdx)}>
-                        <Check size={14} /> Lunas
+                        <Check size={14} /> Bayar
                       </button>
                     </td>
                   </tr>

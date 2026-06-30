@@ -175,7 +175,7 @@ export default function TabKasir() {
               const newSisa = Math.max(0, stokItem.sisa - totalTerpakai);
               const sIdx = stokData.findIndex(s => s.id === stokItem.id);
               if (sIdx >= 0) updateStok(sIdx, { sisa: newSisa });
-              addStokHistory({ tgl: getToday(), item: stokItem.nama, tipe: 'Keluar (Penjualan)', qty: totalTerpakai });
+              addStokHistory({ tgl: getToday(), item: stokItem.nama, tipe: 'Keluar (Penjualan)', qty: totalTerpakai, txId: txId });
             }
           });
         } else if (masterMenu.hppBahan) {
@@ -188,7 +188,9 @@ export default function TabKasir() {
     });
     updateKeuangan({ hppTerjual: newHppTerjual });
 
+    const txId = Date.now();
     const txRecord = {
+      id: txId,
       tgl: new Date().toLocaleString('id-ID'),
       tglRaw: getToday(),
       tipe: metodeBayar === 'Hutang' ? 'Kasbon' : 'Penjualan',
@@ -201,7 +203,7 @@ export default function TabKasir() {
     };
 
     if (metodeBayar === 'Hutang') {
-      addHutang({ id: Date.now(), nama: ident, nominal: total, tglRaw: getToday() });
+      addHutang({ id: txId, nama: ident, nominal: total, sisa: total, pembayaran: [], tglRaw: getToday() });
       await popup('alert', `Transaksi dicatat sebagai Kasbon atas nama ${ident}`, "Sukses");
     } else {
       updateKeuangan({ masuk: keuangan.masuk + total });

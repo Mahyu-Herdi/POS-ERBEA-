@@ -23,7 +23,7 @@ export default function TabStok() {
     const harga = await popup('prompt_num', `Harga beli per 1 ${satuan} (Rp)?\n(Contoh: Jika 1 kg Rp20.000, maka 1 gr Rp20)`, "Harga Satuan");
     if (harga === false) return;
     
-    let qtyAwal = await popup('prompt_num', `Jumlah stok awal yang dibeli saat ini? (Modal Pertama)\nKetik 0 jika hanya input nama dulu.`, "Stok Awal");
+    let qtyAwal = await popup('prompt_float', `Jumlah stok awal yang dibeli saat ini? (Modal Pertama)\nKetik 0 jika hanya input nama dulu.`, "Stok Awal");
     if (qtyAwal === false) qtyAwal = 0;
 
     const totalModalStok = harga * qtyAwal;
@@ -40,7 +40,7 @@ export default function TabStok() {
 
   const handleTambahStok = async (idx: number) => {
     const item = stokData[idx];
-    const n = await popup('prompt_num', `Jumlah ${item.unit} yang dibeli untuk ${item.nama}?`, "Belanja Stok");
+    const n = await popup('prompt_float', `Jumlah ${item.unit} yang dibeli untuk ${item.nama}?`, "Belanja Stok");
     if (n && n > 0) {
       const hargaSatuan = await popup('prompt_num', `Harga beli per 1 ${item.unit} (Rp)?\n(Harga saat ini: Rp ${item.hargaPerUnit})`, "Harga Satuan");
       if (hargaSatuan !== false) {
@@ -68,7 +68,7 @@ export default function TabStok() {
 
   const handleKurangStok = async (idx: number) => {
     const item = stokData[idx];
-    const n = await popup('prompt_num', `Berapa ${item.unit} yang terpakai manual?`, "Pengurangan Stok");
+    const n = await popup('prompt_float', `Berapa ${item.unit} yang terpakai manual?`, "Pengurangan Stok");
     if (n && n > 0 && item.sisa >= n) {
       updateStok(idx, { sisa: item.sisa - n });
       catatMutasi(item.nama, 'Keluar (Pakai)', n);
