@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { useAppModal } from './ModalContext';
 
@@ -68,6 +68,16 @@ export default function TabMasterMenu() {
     setHppJual('');
     await popup('alert', `Katalog menu ${hppNama} berhasil disimpan!`, "Sukses");
   };
+
+  // Sanitize tempResep on stokData change
+  useEffect(() => {
+    const cleanedResep = tempResep.filter(r => stokData.some(s => s.id === r.stokId));
+    if (cleanedResep.length !== tempResep.length) {
+      setTempResep(cleanedResep);
+      const newHppBahan = cleanedResep.reduce((acc, r) => acc + (r.qty * r.hargaPerUnit), 0);
+      setHppBahan(newHppBahan);
+    }
+  }, [stokData]);
 
   const hapusMenu = async (id: string) => {
     if (await popup('confirm', 'Hapus menu ini dari sistem kasir?', "Hapus Menu")) {

@@ -79,6 +79,9 @@ export default function TabStok() {
 
   const handleHapusStok = async (idx: number) => {
     if (await popup('confirm', `Hapus item bahan "${stokData[idx].nama}" dari sistem?`, "Hapus Stok")) {
+      const item = stokData[idx];
+      const nilaiStok = item.sisa * item.hargaPerUnit;
+      updateKeuangan({ modalBahan: Math.max(0, keuangan.modalBahan - nilaiStok) });
       deleteStok(idx);
     }
   };

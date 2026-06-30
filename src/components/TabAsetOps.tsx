@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStore } from '../store';
 import { useAppModal } from './ModalContext';
 
@@ -20,6 +20,10 @@ export default function TabAsetOps() {
     const bebanPerPorsi = targetNum > 0 ? (totalAsetBulan + totalOpsBulan) / targetNum : 0;
     updateBebanAktif({ target: targetNum, perPorsi: Math.round(bebanPerPorsi) });
   };
+
+  useEffect(() => {
+    kalkulasiBebanGlobal(bebanAktif.aset, bebanAktif.ops, bebanAktif.target);
+  }, [bebanAktif.aset.length, bebanAktif.ops.length, bebanAktif.target]);
 
   const tambahAset = async () => {
     const nama = await popup('prompt_text', "Nama Aset (Cth: Mesin Espresso, Kipas):", "Data Aset Baru");
