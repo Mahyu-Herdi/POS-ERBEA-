@@ -3,8 +3,8 @@ export const DRIVE_UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files';
 export const DRIVE_API = 'https://www.googleapis.com/drive/v3/files';
 
 export async function getOrCreateAppFolder(token: string): Promise<string> {
-  const query = encodeURIComponent("mimeType='application/vnd.google-apps.folder' and trashed=false");
-  let res = await fetch(`${DRIVE_API}?q=${query}&orderBy=createdTime desc`, { headers: { Authorization: `Bearer ${token}` } });
+  const query = encodeURIComponent("mimeType='application/vnd.google-apps.folder' and name='Smart POS Warkop Data' and trashed=false");
+  let res = await fetch(`${DRIVE_API}?q=${query}`, { headers: { Authorization: `Bearer ${token}` } });
   let data = await res.json();
   
   if (data.error) throw new Error(data.error.message);
@@ -24,8 +24,8 @@ export async function getOrCreateAppFolder(token: string): Promise<string> {
 }
 
 export async function findSpreadsheetInFolder(folderId: string, token: string): Promise<string | null> {
-  const query = encodeURIComponent(`mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`);
-  const res = await fetch(`${DRIVE_API}?q=${query}&orderBy=createdTime desc`, { headers: { Authorization: `Bearer ${token}` } });
+  const query = encodeURIComponent(`mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`);
+  const res = await fetch(`${DRIVE_API}?q=${query}`, { headers: { Authorization: `Bearer ${token}` } });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   if (data.files && data.files.length > 0) {
