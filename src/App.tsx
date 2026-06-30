@@ -25,7 +25,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const { popup } = useAppModal();
   
-  const { toko, setToko, menu, cart, stokData, transaksiList, hutangList } = useStore();
+  const { toko, setToko, menu, cart, stokData, transaksiList, hutangList, bebanAktif, keuangan } = useStore();
 
   const isInitialMount = useRef(true);
 
@@ -122,7 +122,7 @@ export default function App() {
       }, 5000);
       return () => clearTimeout(timeout);
     }
-  }, [toko.nama, toko.logoDriveId, menu, stokData, transaksiList, hutangList, user]);
+  }, [toko.nama, toko.logoDriveId, menu, stokData, transaksiList, hutangList, bebanAktif, keuangan, user]);
 
   const handleLogin = async () => {
     setIsLoggingIn(true);
@@ -257,8 +257,42 @@ export default function App() {
       try {
         const stokArr = [['ID', 'Nama', 'Sisa', 'Unit', 'Harga Per Unit']];
         state.stokData.forEach(s => stokArr.push([s.id, s.nama, s.sisa.toString(), s.unit, s.hargaPerUnit.toString()]));
-        await clearSheetData(sheetId, 'Aset!A1:E1000', token);
-        await updateSheetData(sheetId, 'Aset!A1:E1000', stokArr, token);
+        await clearSheetData(sheetId, 'Stok!A1:E1000', token);
+        await updateSheetData(sheetId, 'Stok!A1:E1000', stokArr, token);
+      } catch(e) { console.warn(e); }
+
+      try {
+        const asetArr = [['Nama', 'Harga', 'Umur (Bulan)']];
+        state.bebanAktif.aset.forEach(a => asetArr.push([a.nama, a.harga.toString(), a.umur.toString()]));
+        await clearSheetData(sheetId, 'BebanAset!A1:C1000', token);
+        await updateSheetData(sheetId, 'BebanAset!A1:C1000', asetArr, token);
+      } catch(e) { console.warn(e); }
+
+      try {
+        const opsArr = [['Nama', 'Biaya Bulanan']];
+        state.bebanAktif.ops.forEach(o => opsArr.push([o.nama, o.biaya.toString()]));
+        await clearSheetData(sheetId, 'BebanOps!A1:B1000', token);
+        await updateSheetData(sheetId, 'BebanOps!A1:B1000', opsArr, token);
+      } catch(e) { console.warn(e); }
+
+      try {
+        const targetArr = [['Target Porsi', state.bebanAktif.target.toString()]];
+        await updateSheetData(sheetId, 'Target!A1:B1', targetArr, token);
+      } catch(e) { console.warn(e); }
+
+      try {
+        const keuArr = [
+          ['Masuk', 'Keluar Op', 'Keluar Stok', 'Prive', 'Modal Bahan', 'HPP Terjual'],
+          [
+            state.keuangan.masuk.toString(),
+            state.keuangan.keluarOp.toString(),
+            state.keuangan.keluarStok.toString(),
+            state.keuangan.prive.toString(),
+            state.keuangan.modalBahan.toString(),
+            (state.keuangan.hppTerjual || 0).toString()
+          ]
+        ];
+        await updateSheetData(sheetId, 'Keuangan!A1:F2', keuArr, token);
       } catch(e) { console.warn(e); }
 
       try {
@@ -319,7 +353,11 @@ export default function App() {
       } catch (e) { console.log('No Menu sheet or empty'); }
 
       try {
-        const stokRes = await getSheetData(sheetId, 'Aset!A1:E1000', token);
+        let stokRes = await getSheetData(sheetId, 'Stok!A1:E1000', token);
+        if (!stokRes) {
+          // Fallback to old 'Aset' sheet name for backwards compatibility
+          stokRes = await getSheetData(sheetId, 'Aset!A1:E1000', token);
+        }
         if (stokRes && stokRes.length > 1) {
           const newStok = stokRes.slice(1).map((row: any) => ({
             id: row[0],
@@ -332,7 +370,68 @@ export default function App() {
         } else if (stokRes) {
           useStore.getState().setStokData([]);
         }
-      } catch (e) { console.log('No Aset sheet or empty'); }
+      } catch (e) { console.log('No Stok/Aset sheet or empty'); }
+
+      try {
+        let newAset: any[] = [];
+        let newOps: any[] = [];
+        let newTarget = 1000;
+        
+        try {
+          const asetRes = await getSheetData(sheetId, 'BebanAset!A1:C1000', token);
+          if (asetRes && asetRes.length > 1) {
+            newAset = asetRes.slice(1).map((row: any) => ({
+              nama: row[0],
+              harga: parseFloat(row[1]) || 0,
+              umur: parseFloat(row[2]) || 1
+            }));
+          }
+        } catch(e) {}
+
+        try {
+          const opsRes = await getSheetData(sheetId, 'BebanOps!A1:B1000', token);
+          if (opsRes && opsRes.length > 1) {
+            newOps = opsRes.slice(1).map((row: any) => ({
+              nama: row[0],
+              biaya: parseFloat(row[1]) || 0
+            }));
+          }
+        } catch(e) {}
+
+        try {
+          const targetRes = await getSheetData(sheetId, 'Target!A1:B1', token);
+          if (targetRes && targetRes.length > 0) {
+             newTarget = parseFloat(targetRes[0][1]) || 1000;
+          }
+        } catch(e) {}
+
+        let totalAsetBulan = 0;
+        newAset.forEach(a => totalAsetBulan += a.harga / a.umur);
+        let totalOpsBulan = 0;
+        newOps.forEach(o => totalOpsBulan += o.biaya);
+        const bebanPerPorsi = newTarget > 0 ? (totalAsetBulan + totalOpsBulan) / newTarget : 0;
+
+        useStore.getState().updateBebanAktif({ 
+          aset: newAset, 
+          ops: newOps, 
+          target: newTarget, 
+          perPorsi: Math.round(bebanPerPorsi) 
+        });
+      } catch (e) { console.log('Error pulling Beban data'); }
+
+      try {
+        const keuRes = await getSheetData(sheetId, 'Keuangan!A1:F2', token);
+        if (keuRes && keuRes.length > 1) {
+          useStore.getState().updateKeuangan({
+            masuk: parseFloat(keuRes[1][0]) || 0,
+            keluarOp: parseFloat(keuRes[1][1]) || 0,
+            keluarStok: parseFloat(keuRes[1][2]) || 0,
+            prive: parseFloat(keuRes[1][3]) || 0,
+            modalBahan: parseFloat(keuRes[1][4]) || 0,
+            hppTerjual: parseFloat(keuRes[1][5]) || 0,
+          });
+        }
+      } catch (e) { console.log('No Keuangan sheet'); }
 
       try {
         const txRes = await getSheetData(sheetId, 'Transaksi!A1:G5000', token);
