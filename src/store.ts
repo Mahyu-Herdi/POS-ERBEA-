@@ -14,6 +14,8 @@ export interface MenuItem {
   name: string;
   harga: number;
   resep: any[];
+  hppBahan?: number;
+  hppOp?: number;
 }
 
 export interface CartItem extends MenuItem {

@@ -161,22 +161,29 @@ export default function TabKasir() {
     let hppTx = 0;
     itemsPaid.forEach(cartItem => {
       const masterMenu = menu.find(m => m.id === cartItem.id);
-      if (masterMenu && masterMenu.resep) {
-        masterMenu.resep.forEach((r: any) => {
-          const stokItem = stokData.find(s => s.id === r.stokId);
-          const currentPrice = stokItem ? stokItem.hargaPerUnit : r.hargaPerUnit;
-          const hppItem = (currentPrice * r.qty * cartItem.qty);
-          newHppTerjual += hppItem;
-          hppTx += hppItem;
-          
-          if (stokItem) {
-            const totalTerpakai = r.qty * cartItem.qty;
-            const newSisa = Math.max(0, stokItem.sisa - totalTerpakai);
-            const sIdx = stokData.findIndex(s => s.id === stokItem.id);
-            if (sIdx >= 0) updateStok(sIdx, { sisa: newSisa });
-            addStokHistory({ tgl: getToday(), item: stokItem.nama, tipe: 'Keluar (Penjualan)', qty: totalTerpakai });
-          }
-        });
+      if (masterMenu) {
+        let itemHppTotal = 0;
+        if (masterMenu.resep && masterMenu.resep.length > 0) {
+          masterMenu.resep.forEach((r: any) => {
+            const stokItem = stokData.find(s => s.id === r.stokId);
+            const currentPrice = stokItem ? stokItem.hargaPerUnit : r.hargaPerUnit;
+            const hppItem = (currentPrice * r.qty * cartItem.qty);
+            itemHppTotal += hppItem;
+            
+            if (stokItem) {
+              const totalTerpakai = r.qty * cartItem.qty;
+              const newSisa = Math.max(0, stokItem.sisa - totalTerpakai);
+              const sIdx = stokData.findIndex(s => s.id === stokItem.id);
+              if (sIdx >= 0) updateStok(sIdx, { sisa: newSisa });
+              addStokHistory({ tgl: getToday(), item: stokItem.nama, tipe: 'Keluar (Penjualan)', qty: totalTerpakai });
+            }
+          });
+        } else if (masterMenu.hppBahan) {
+           itemHppTotal = masterMenu.hppBahan * cartItem.qty;
+        }
+        
+        newHppTerjual += itemHppTotal;
+        hppTx += itemHppTotal;
       }
     });
     updateKeuangan({ hppTerjual: newHppTerjual });

@@ -150,7 +150,17 @@ export default function App() {
       if (result.status === 'success' && result.data) {
         const d = result.data;
         if (d.toko) setToko({ nama: d.toko.nama, logoBase64: d.toko.logoBase64 });
-        if (d.menu) useStore.getState().setFullState({ menu: d.menu });
+        if (d.menu) {
+          const currentMenu = useStore.getState().menu;
+          const mergedMenu = d.menu.map((pulledM: any) => {
+            const existing = currentMenu.find(m => m.id === pulledM.id);
+            if (existing) {
+              return { ...pulledM, resep: existing.resep, hppBahan: existing.hppBahan, hppOp: existing.hppOp };
+            }
+            return pulledM;
+          });
+          useStore.getState().setFullState({ menu: mergedMenu });
+        }
         if (d.stokData) useStore.getState().setStokData(d.stokData);
         if (d.bebanAktif) useStore.getState().updateBebanAktif(d.bebanAktif);
         if (d.keuangan) useStore.getState().updateKeuangan(d.keuangan);

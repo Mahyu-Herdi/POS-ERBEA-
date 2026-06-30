@@ -58,7 +58,7 @@ export default function TabMasterMenu() {
     }
 
     const newMenu = [...menu];
-    newMenu.push({ id: 'm' + Date.now(), name: hppNama, harga: jual, resep: [...tempResep] });
+    newMenu.push({ id: 'm' + Date.now(), name: hppNama, harga: jual, resep: [...tempResep], hppBahan: hppBahan, hppOp: opNum });
     setMenu(newMenu);
     
     setTempResep([]);
@@ -152,7 +152,8 @@ export default function TabMasterMenu() {
             <div key={m.id} className="flex-between" style={{ borderBottom: '1px dashed rgba(163,177,198,0.3)', padding: '10px 0' }}>
               <div style={{ fontSize: '14px' }}>
                 <strong>{m.name}</strong> <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>({m.resep && m.resep.length > 0 ? `${m.resep.length} Bahan baku` : 'Tanpa resep'})</span> 
-                <br /><span className="text-blue" style={{ fontSize: '12px' }}>Rp {m.harga.toLocaleString('id-ID')}</span>
+                <br /><span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Modal Bahan: Rp {(m.hppBahan || 0).toLocaleString('id-ID')} | Beban Ops: Rp {(m.hppOp || 0).toLocaleString('id-ID')}</span>
+                <br /><span className="text-blue" style={{ fontSize: '12px' }}>Harga Jual: Rp {m.harga.toLocaleString('id-ID')}</span>
               </div>
               <button className="btn bg-red" style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '10px' }} onClick={() => hapusMenu(m.id)}>Hapus</button>
             </div>
