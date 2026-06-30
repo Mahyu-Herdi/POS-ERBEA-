@@ -8,14 +8,16 @@
   "theme_color": "#0984e3",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_2012_logo.svg/192px-Twitter_2012_logo.svg.png",
+      "src": "/icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_2012_logo.svg/512px-Twitter_2012_logo.svg.png",
+      "src": "/icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
