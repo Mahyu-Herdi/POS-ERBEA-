@@ -1,0 +1,6 @@
+{
+  "name": "Smart POS Warkop",
+  "description": "A Point of Sale application synchronized with Google Sheets for real-time storage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

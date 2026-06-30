@@ -1,0 +1,21 @@
+{
+  "name": "Smart POS Warkop",
+  "short_name": "POS Warkop",
+  "description": "A Point of Sale application synchronized with Google Sheets",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e272e",
+  "theme_color": "#0984e3",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_2012_logo.svg/192px-Twitter_2012_logo.svg.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_2012_logo.svg/512px-Twitter_2012_logo.svg.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
