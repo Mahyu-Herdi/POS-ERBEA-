@@ -167,7 +167,11 @@ export default function TabLaporan() {
         <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Riwayat Transaksi & Arus Keuangan Komprehensif</h3>
         
         <div className="flex-between"><span>Total Pemasukan:</span> <strong className="text-green">Rp {sumIn.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between" style={{ marginBottom: '15px' }}><span>Total Pengeluaran:</span> <strong className="text-red">Rp {sumOut.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between"><span>Total Pengeluaran:</span> <strong className="text-red">Rp {sumOut.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-green font-bold" style={{ fontSize: '15px', marginBottom: '15px' }}>
+          <span>Total Laba Bersih (Periode):</span>
+          <strong>Rp {bersihFiltered.toLocaleString('id-ID')}</strong>
+        </div>
         <hr style={{ border: 0, borderTop: '1px dashed rgba(163,177,198,0.4)', margin: '10px 0 15px 0' }} />
 
         <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
@@ -248,16 +252,13 @@ export default function TabLaporan() {
       </div>
 
       <div className="clay-card">
-        <h3 style={{ color: 'var(--text-muted)', marginBottom: '5px' }}>Neraca Laba Bersih Komprehensif</h3>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '20px' }}>
-          Periode: {filterTxMulai && filterTxAkhir ? `${filterTxMulai} s/d ${filterTxAkhir}` : 'Semua Waktu'}
-        </p>
-        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {kotorFiltered.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {hppFiltered.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {stokFiltered.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {opFiltered.toLocaleString('id-ID')}</strong></div>
+        <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Neraca Laba Bersih Komprehensif</h3>
+        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {kotor.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {hppTerjual.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {stok.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {op.toLocaleString('id-ID')}</strong></div>
         <hr style={{ border: 0, borderTop: '2px solid rgba(163,177,198,0.3)', margin: '15px 0' }} />
-        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersihFiltered.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersih.toLocaleString('id-ID')}</strong></div>
       </div>
 
       <div className="clay-card" style={{ border: '1px solid var(--blue)' }}>
