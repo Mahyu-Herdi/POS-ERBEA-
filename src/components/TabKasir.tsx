@@ -3,7 +3,7 @@ import { useStore } from '../store';
 import { useAppModal } from './ModalContext';
 
 export default function TabKasir() {
-  const { menu, cart, addToCart, updateCartQty, toggleCartBayar, setOrderMode, orderMode, mejaAktif, setMejaAktif, totalMeja, addTransaksi, keuangan, updateKeuangan, stokData, updateStok, addStokHistory, addHutang } = useStore();
+  const { menu, cart, addToCart, updateCartQty, toggleCartBayar, setOrderMode, orderMode, mejaAktif, setMejaAktif, totalMeja, addTransaksi, keuangan, updateKeuangan, stokData, updateStok, addStokHistory, addHutang, toko } = useStore();
   const [search, setSearch] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [diskon, setDiskon] = useState('0');
@@ -19,6 +19,87 @@ export default function TabKasir() {
   }, []);
 
   const getToday = () => new Date().toISOString().split('T')[0];
+
+  const cetakStruk = (txRecord: any) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    let itemsHtml = '';
+    txRecord.items.forEach((item: any) => {
+      itemsHtml += `
+        <div style="margin-bottom: 2px;">${item.nama}</div>
+        <div class="print-flex">
+          <span>${item.qty} x ${item.harga.toLocaleString('id-ID')}</span>
+          <span>${(item.qty * item.harga).toLocaleString('id-ID')}</span>
+        </div>
+      `;
+    });
+
+    const tokoNama = toko.nama || 'Toko Kita';
+    const logoHtml = toko.logoBase64 ? `<img src="${toko.logoBase64}" class="print-logo" />` : '';
+
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Struk Pembayaran</title>
+          <style>
+            @page { margin: 0; }
+            body { 
+              font-family: 'Courier New', Courier, monospace; 
+              font-size: 12px; 
+              color: #000; 
+              width: 58mm; 
+              margin: 0; 
+              padding: 5px; 
+            }
+            .print-center { text-align: center; } 
+            .print-line { border-bottom: 1px dashed #000; margin: 5px 0; } 
+            .print-flex { display: flex; justify-content: space-between; }
+            .print-logo { filter: grayscale(100%); width: 50px; margin-bottom: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="print-center">
+            ${logoHtml}
+            <h3 style="margin: 5px 0;">${tokoNama}</h3>
+            <div>${txRecord.tgl}</div>
+            <div class="print-line"></div>
+          </div>
+          <div>
+            <strong>Pelanggan: ${txRecord.ident}</strong>
+          </div>
+          <div class="print-line"></div>
+          ${itemsHtml}
+          <div class="print-line"></div>
+          <div class="print-flex">
+            <strong>TOTAL</strong>
+            <strong>Rp ${txRecord.total.toLocaleString('id-ID')}</strong>
+          </div>
+          <div class="print-flex">
+            <span>BAYAR (${txRecord.metode})</span>
+            <span>Rp ${txRecord.bayar.toLocaleString('id-ID')}</span>
+          </div>
+          <div class="print-flex">
+            <span>KEMBALI</span>
+            <span>Rp ${(txRecord.bayar - txRecord.total).toLocaleString('id-ID')}</span>
+          </div>
+          <div class="print-line"></div>
+          <div class="print-center">
+            <div>Terima Kasih</div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
 
   const formatUang = (val: string) => {
     const num = parseInt(val.replace(/\D/g, ''), 10);
@@ -119,7 +200,7 @@ export default function TabKasir() {
       updateKeuangan({ masuk: keuangan.masuk + total });
       const print = await popup('print_confirm', `Pembayaran via ${metodeBayar} Lunas! Cetak struk untuk pelanggan ini?`, "Pembayaran Berhasil");
       if (print) {
-        await popup('alert', "Mencetak struk...", "Cetak Struk");
+        cetakStruk(txRecord);
       }
     }
 

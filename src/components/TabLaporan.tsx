@@ -135,16 +135,6 @@ export default function TabLaporan() {
   return (
     <>
       <div className="clay-card">
-        <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Neraca Laba Bersih Komprehensif</h3>
-        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {kotor.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {hppTerjual.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {stok.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {op.toLocaleString('id-ID')}</strong></div>
-        <hr style={{ border: 0, borderTop: '2px solid rgba(163,177,198,0.3)', margin: '15px 0' }} />
-        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersih.toLocaleString('id-ID')}</strong></div>
-      </div>
-
-      <div className="clay-card">
         <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Riwayat Transaksi & Arus Keuangan Komprehensif</h3>
         
         <div className="flex-between"><span>Total Pemasukan:</span> <strong className="text-green">Rp {sumIn.toLocaleString('id-ID')}</strong></div>
@@ -184,37 +174,6 @@ export default function TabLaporan() {
         </table>
       </div>
 
-      <div className="clay-card" style={{ border: '1px solid var(--blue)' }}>
-        <h3 style={{ color: 'var(--blue)', marginBottom: '15px' }}>Status Keseluruhan Modal & ROI (Balik Modal)</h3>
-        <div className="flex-between"><span>Modal Aset (Alat/Mesin)</span> <strong>Rp {modalAset.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between"><span>Modal Bahan Baku (Awal)</span> <strong>Rp {modalBahan.toLocaleString('id-ID')}</strong></div>
-        <hr style={{ border: 0, borderTop: '1px dashed rgba(163,177,198,0.4)', margin: '10px 0' }} />
-        <div className="flex-between" style={{ fontWeight: 'bold' }}><span>Total Keseluruhan Modal</span> <strong className="text-orange">Rp {totalModal.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between" style={{ marginTop: '15px', fontWeight: 'bold' }}>
-          <span>Estimasi Balik Modal (ROI):</span> 
-          <strong className={roi > 0 ? 'text-green' : roi < 0 ? 'text-red' : 'text-muted'} style={{ fontSize: '18px' }}>
-            {roi > 0 ? `+Rp ${roi.toLocaleString('id-ID')} (Untung Murni)` : roi < 0 ? `-Rp ${Math.abs(roi).toLocaleString('id-ID')} (Belum Balik)` : `Rp 0 (Break Even Point)`}
-          </strong>
-        </div>
-      </div>
-
-      <div className="split-layout">
-        <div className="clay-card" style={{ flex: 1 }}>
-          <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Catat Beban Operasional Baru</h3>
-          <input type="text" className="btn-input" placeholder="Cth: Bayar Listrik, Gas" value={namaPengeluaran} onChange={e => setNamaPengeluaran(e.target.value)} />
-          <input type="text" inputMode="numeric" className="btn-input" placeholder="Nominal (Rp)" value={nominalPengeluaran} onChange={e => setNominalPengeluaran(formatUang(e.target.value))} />
-          <button className="btn bg-red" style={{ width: '100%', marginTop: '15px' }} onClick={tambahPengeluaran}>Catat Pengeluaran</button>
-        </div>
-
-        <div className="clay-card" style={{ flex: 1, border: '2px solid var(--orange)' }}>
-          <h3 style={{ color: 'var(--orange)', marginBottom: '15px' }}>Tarik Prive (Kebutuhan Pribadi)</h3>
-          <p style={{ fontSize: '11px', marginBottom: '10px' }}>Penarikan ini dicatat sebagai arus keluar & memotong laci kas.</p>
-          <input type="text" inputMode="numeric" className="btn-input" placeholder="Nominal Tarik Prive (Rp)" value={inputPrive} onChange={e => setInputPrive(formatUang(e.target.value))} />
-          <button className="btn bg-orange" style={{ width: '100%', marginTop: '15px', color: 'white' }} onClick={tarikPrive}>Tarik Saldo Kas</button>
-          <div className="flex-between" style={{ marginTop: '15px' }}><span>Sisa Uang Di Laci:</span> <strong style={{ fontSize: '18px' }}>Rp {sisaKasLaci.toLocaleString('id-ID')}</strong></div>
-        </div>
-      </div>
-
       <div className="clay-card">
         <h3 style={{ color: 'var(--text-muted)' }}>Manajemen Hutang / Kasbon</h3>
         <table>
@@ -240,6 +199,47 @@ export default function TabLaporan() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="split-layout">
+        <div className="clay-card" style={{ flex: 1 }}>
+          <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Catat Beban Operasional Baru</h3>
+          <input type="text" className="btn-input" placeholder="Cth: Bayar Listrik, Gas" value={namaPengeluaran} onChange={e => setNamaPengeluaran(e.target.value)} />
+          <input type="text" inputMode="numeric" className="btn-input" placeholder="Nominal (Rp)" value={nominalPengeluaran} onChange={e => setNominalPengeluaran(formatUang(e.target.value))} />
+          <button className="btn bg-red" style={{ width: '100%', marginTop: '15px' }} onClick={tambahPengeluaran}>Catat Pengeluaran</button>
+        </div>
+
+        <div className="clay-card" style={{ flex: 1, border: '2px solid var(--orange)' }}>
+          <h3 style={{ color: 'var(--orange)', marginBottom: '15px' }}>Tarik Prive (Kebutuhan Pribadi)</h3>
+          <p style={{ fontSize: '11px', marginBottom: '10px' }}>Penarikan ini dicatat sebagai arus keluar & memotong laci kas.</p>
+          <input type="text" inputMode="numeric" className="btn-input" placeholder="Nominal Tarik Prive (Rp)" value={inputPrive} onChange={e => setInputPrive(formatUang(e.target.value))} />
+          <button className="btn bg-orange" style={{ width: '100%', marginTop: '15px', color: 'white' }} onClick={tarikPrive}>Tarik Saldo Kas</button>
+          <div className="flex-between" style={{ marginTop: '15px' }}><span>Sisa Uang Di Laci:</span> <strong style={{ fontSize: '18px' }}>Rp {sisaKasLaci.toLocaleString('id-ID')}</strong></div>
+        </div>
+      </div>
+
+      <div className="clay-card">
+        <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Neraca Laba Bersih Komprehensif</h3>
+        <div className="flex-between"><span>Penjualan Kotor (Omset)</span> <strong className="text-blue">Rp {kotor.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-orange"><span>(-) HPP (Modal Bahan Terjual)</span> <strong>Rp {hppTerjual.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Belanja Operasional Stok</span> <strong>Rp {stok.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between text-red"><span>(-) Pengeluaran Operasional</span> <strong>Rp {op.toLocaleString('id-ID')}</strong></div>
+        <hr style={{ border: 0, borderTop: '2px solid rgba(163,177,198,0.3)', margin: '15px 0' }} />
+        <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersih.toLocaleString('id-ID')}</strong></div>
+      </div>
+
+      <div className="clay-card" style={{ border: '1px solid var(--blue)' }}>
+        <h3 style={{ color: 'var(--blue)', marginBottom: '15px' }}>Status Keseluruhan Modal & ROI (Balik Modal)</h3>
+        <div className="flex-between"><span>Modal Aset (Alat/Mesin)</span> <strong>Rp {modalAset.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between"><span>Modal Bahan Baku (Awal)</span> <strong>Rp {modalBahan.toLocaleString('id-ID')}</strong></div>
+        <hr style={{ border: 0, borderTop: '1px dashed rgba(163,177,198,0.4)', margin: '10px 0' }} />
+        <div className="flex-between" style={{ fontWeight: 'bold' }}><span>Total Keseluruhan Modal</span> <strong className="text-orange">Rp {totalModal.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between" style={{ marginTop: '15px', fontWeight: 'bold' }}>
+          <span>Estimasi Balik Modal (ROI):</span> 
+          <strong className={roi > 0 ? 'text-green' : roi < 0 ? 'text-red' : 'text-muted'} style={{ fontSize: '18px' }}>
+            {roi > 0 ? `+Rp ${roi.toLocaleString('id-ID')} (Untung Murni)` : roi < 0 ? `-Rp ${Math.abs(roi).toLocaleString('id-ID')} (Belum Balik)` : `Rp 0 (Break Even Point)`}
+          </strong>
+        </div>
       </div>
     </>
   );

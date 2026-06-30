@@ -142,6 +142,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbykgUesJWL7750kB7jpxXlw
 
       const response = await fetch(GAS_URL, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
         redirect: 'follow',
         body: JSON.stringify(payload)
       });
@@ -179,6 +182,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbykgUesJWL7750kB7jpxXlw
       const payload = { type: 'PULL_ALL' };
       const response = await fetch(GAS_URL, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
         redirect: 'follow',
         body: JSON.stringify(payload)
       });
