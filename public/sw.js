@@ -1,6 +1,7 @@
-const CACHE_NAME = 'pos-warkop-v3';
+const CACHE_NAME = 'pos-warkop-v5';
 const urlsToCache = [
   '/',
+  '/?source=pwa',
   '/index.html',
   '/manifest.json',
   '/icon-192.png',

@@ -16,6 +16,7 @@ export default function App() {
     return localStorage.getItem('activeTab') || 'kasir';
   });
   const [activeSubTab, setActiveSubTab] = useState('sub-sistem');
+  const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { popup } = useAppModal();
   
@@ -71,9 +72,133 @@ export default function App() {
     return () => window.removeEventListener('navToKasir', handleNav);
   }, []);
 
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbykgUesJWL7750kB7jpxXlw_x-2Gv32b2gZoEuxqnk03vE34q-YL5GKrKBpd7kNbsMS/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
+
+  const syncToSheets = async (showPrompt = true) => {
+    if (!GAS_URL) {
+      if (showPrompt) await popup('alert', 'URL Apps Script belum diatur di dalam kode sumber.', 'Gagal');
+      return;
+    }
+
+    try {
+      if (showPrompt) setIsSaving(true);
+      
+      const state = useStore.getState();
+      const payload = {
+        type: 'SYNC_ALL',
+        payload: {
+          toko: state.toko,
+          menu: state.menu,
+          stokData: state.stokData,
+          bebanAktif: state.bebanAktif,
+          keuangan: state.keuangan,
+          transaksiList: state.transaksiList
+        }
+      };
+
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
+      
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        throw new Error("Apps Script mengembalikan error non-JSON. Pastikan Spreadsheet ID di KODE_GS_APPS_SCRIPT.js sudah benar dan di-deploy ulang. Detail: " + text.substring(0, 100));
+      }
+
+      if (result.status === 'success') {
+        if (showPrompt) await popup('alert', 'Berhasil! Data telah disinkronisasikan ke Google Sheets via Apps Script.', 'Sukses');
+      } else {
+        throw new Error(result.message || 'Unknown error from Apps Script');
+      }
+    } catch (error: any) {
+      console.error(error);
+      if (showPrompt) await popup('alert', `Gagal sinkronisasi: ${error.message}`, "Gagal");
+    } finally {
+      if (showPrompt) setIsSaving(false);
+    }
+  };
+
+  const pullFromSheets = async (showPrompt = true) => {
+    if (!GAS_URL) {
+      if (showPrompt) await popup('alert', 'URL Apps Script belum diatur di dalam kode sumber.', 'Gagal');
+      return;
+    }
+    
+    try {
+      if (showPrompt) setIsSaving(true);
+
+      const payload = { type: 'PULL_ALL' };
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
+      
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        throw new Error("Apps Script mengembalikan error non-JSON. Pastikan Spreadsheet ID di KODE_GS_APPS_SCRIPT.js sudah benar dan di-deploy ulang. Detail: " + text.substring(0, 100));
+      }
+
+      if (result.status === 'success' && result.data) {
+        const d = result.data;
+        if (d.toko) setToko({ nama: d.toko.nama, logoBase64: d.toko.logoBase64 });
+        if (d.menu) useStore.getState().setFullState({ menu: d.menu });
+        if (d.stokData) useStore.getState().setStokData(d.stokData);
+        if (d.bebanAktif) useStore.getState().updateBebanAktif(d.bebanAktif);
+        if (d.keuangan) useStore.getState().updateKeuangan(d.keuangan);
+        if (d.transaksiList) useStore.getState().setFullState({ transaksiList: d.transaksiList });
+        
+        if (showPrompt) await popup('alert', 'Data berhasil ditarik dari Spreadsheet!', "Berhasil");
+      } else {
+        throw new Error(result.message || 'Unknown error from Apps Script');
+      }
+    } catch (error: any) {
+      console.error(error);
+      if (showPrompt) await popup('alert', `Gagal menarik data: ${error.message}`, "Gagal");
+    } finally {
+      if (showPrompt) setIsSaving(false);
+    }
+  };
+
   useEffect(() => {
     document.body.classList.add('dark-mode');
+    
+    if (GAS_URL) {
+      pullFromSheets(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      if (GAS_URL) {
+        syncToSheets(false);
+      }
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (GAS_URL) {
+      // Auto-sync ke cloud 5 detik setelah ada perubahan data lokal
+      const timeout = setTimeout(() => {
+        syncToSheets(false);
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [toko.nama, menu, stokData, transaksiList, hutangList, bebanAktif, keuangan]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,6 +218,17 @@ export default function App() {
       onTouchEnd={handleTouchEnd}
       style={{ minHeight: '100vh', overflowX: 'hidden' }}
     >
+      {isSaving && (
+        <div className="modal-overlay active">
+          <div className="clay-card modal-box" style={{ textAlign: 'center', margin: 'auto' }}>
+            <h3 style={{ color: 'var(--text-main)', marginBottom: '10px' }}>Menyimpan Data...</h3>
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+              <div className="spinner"></div>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Sinkronisasi dengan Google Workspace</p>
+          </div>
+        </div>
+      )}
 
       {(activeTab === 'meja') && (
         <header>
@@ -166,6 +302,18 @@ export default function App() {
 
               <hr style={{ border: 0, borderTop: '2px solid rgba(163,177,198,0.3)', margin: '25px 0' }} />
               
+              <div className="flex-between" style={{ marginBottom: '15px' }}>
+                <span style={{ fontWeight: 600, fontSize: '14px' }}>Integrasi Google Sheets</span>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button className="btn bg-blue" style={{ padding: '8px 12px', fontSize: '12px' }} onClick={() => syncToSheets(true)}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg> Sync
+                  </button>
+                  <button className="btn bg-green" style={{ padding: '8px 12px', fontSize: '12px' }} onClick={() => pullFromSheets(true)}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg> Tarik
+                  </button>
+                </div>
+              </div>
+
               <div className="flex-between">
                 <span style={{ fontWeight: 600, fontSize: '14px' }}>Tema Gelap (Dark Mode)</span>
                 <button className="btn bg-blue" onClick={() => document.body.classList.toggle('dark-mode')}>Alihkan Tema</button>
