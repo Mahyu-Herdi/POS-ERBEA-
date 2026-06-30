@@ -161,6 +161,19 @@ export default function TabLaporan() {
     return match;
   });
 
+  const tampilkanDetailTransaksi = async (tx: any) => {
+    const labelTipe = tx.tipe || 'Penjualan';
+    let detailItems = '';
+    if (tx.items && tx.items.length > 0) {
+      detailItems = tx.items.map((it: any) => `• ${it.name} x${it.qty} (@Rp ${it.harga.toLocaleString('id-ID')})`).join('\n');
+    } else {
+      detailItems = 'Tidak ada rincian item.';
+    }
+    const totalFormat = tx.total.toLocaleString('id-ID');
+    const msg = `Tipe: ${labelTipe}\nKeterangan/Meja: ${tx.ident}\nTanggal: ${tx.tgl}\nMetode: ${tx.metode}\n\nRincian Pesanan:\n${detailItems}\n\nTotal: Rp ${totalFormat}`;
+    await popup('alert', msg, `Detail Transaksi`);
+  };
+
   return (
     <>
       <div className="clay-card">
@@ -193,7 +206,14 @@ export default function TabLaporan() {
                 return (
                   <tr key={idx}>
                     <td style={{ fontSize: '10px' }}>{tx.tgl}</td>
-                    <td style={{ fontSize: '12px' }}><strong>[{labelTipe}]</strong> {tx.ident}</td>
+                    <td style={{ fontSize: '12px', cursor: 'pointer' }} onClick={() => tampilkanDetailTransaksi(tx)}>
+                      <strong>[{labelTipe}]</strong> {tx.ident}
+                      {tx.items && tx.items.length > 0 && (
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          {tx.items.map((it: any) => `${it.name} (x${it.qty})`).join(', ')}
+                        </div>
+                      )}
+                    </td>
                     <td className={colorClass} style={{ fontSize: '12px', fontWeight: 'bold' }}>Rp {tx.total.toLocaleString('id-ID')}</td>
                     <td style={{ fontSize: '11px' }}>{tx.metode}</td>
                     <td style={{ textAlign: 'right' }}>

@@ -95,7 +95,7 @@ const initialState = {
   transaksiList: [],
   hutangList: [],
   keuangan: { masuk: 0, keluarOp: 0, keluarStok: 0, prive: 0, modalBahan: 0, hppTerjual: 0 },
-  bebanAktif: { aset: [], ops: [], target: 0, perPorsi: 0 },
+  bebanAktif: { aset: [], ops: [], target: 1000, perPorsi: 0 },
   tempResep: [],
 };
 

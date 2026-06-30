@@ -107,10 +107,11 @@ export default function App() {
       try {
         result = JSON.parse(text);
       } catch (e) {
-        throw new Error("Apps Script mengembalikan error non-JSON. Pastikan Spreadsheet ID di KODE_GS_APPS_SCRIPT.js sudah benar dan di-deploy ulang. Detail: " + text.substring(0, 100));
+        throw new Error("Apps Script mengembalikan error non-JSON. Detail: " + text.substring(0, 100));
       }
 
       if (result.status === 'success') {
+        localStorage.setItem('pos_unsynced', 'false');
         if (showPrompt) await popup('alert', 'Berhasil! Data telah disinkronisasikan ke Google Sheets via Apps Script.', 'Sukses');
       } else {
         throw new Error(result.message || 'Unknown error from Apps Script');
@@ -144,12 +145,12 @@ export default function App() {
       try {
         result = JSON.parse(text);
       } catch (e) {
-        throw new Error("Apps Script mengembalikan error non-JSON. Pastikan Spreadsheet ID di KODE_GS_APPS_SCRIPT.js sudah benar dan di-deploy ulang. Detail: " + text.substring(0, 100));
+        throw new Error("Apps Script mengembalikan error non-JSON. Detail: " + text.substring(0, 100));
       }
 
       if (result.status === 'success' && result.data) {
         const d = result.data;
-        if (d.toko) setToko({ nama: d.toko.nama, logoBase64: d.toko.logoBase64 });
+        if (d.toko) setToko({ nama: d.toko.nama || '', logoBase64: d.toko.logoBase64 || null });
         if (d.menu) {
           const currentMenu = useStore.getState().menu;
           const mergedMenu = d.menu.map((pulledM: any) => {
@@ -162,8 +163,26 @@ export default function App() {
           useStore.getState().setFullState({ menu: mergedMenu });
         }
         if (d.stokData) useStore.getState().setStokData(d.stokData);
-        if (d.bebanAktif) useStore.getState().updateBebanAktif(d.bebanAktif);
-        if (d.keuangan) useStore.getState().updateKeuangan(d.keuangan);
+        if (d.bebanAktif) {
+          const currentBeban = useStore.getState().bebanAktif;
+          useStore.getState().updateBebanAktif({
+            aset: d.bebanAktif.aset || currentBeban.aset || [],
+            ops: d.bebanAktif.ops || currentBeban.ops || [],
+            target: d.bebanAktif.target || currentBeban.target || 1000,
+            perPorsi: d.bebanAktif.perPorsi || currentBeban.perPorsi || 0
+          });
+        }
+        if (d.keuangan) {
+          const currentKeuangan = useStore.getState().keuangan;
+          useStore.getState().updateKeuangan({
+            masuk: typeof d.keuangan.masuk === 'number' ? d.keuangan.masuk : currentKeuangan.masuk,
+            keluarOp: typeof d.keuangan.keluarOp === 'number' ? d.keuangan.keluarOp : currentKeuangan.keluarOp,
+            keluarStok: typeof d.keuangan.keluarStok === 'number' ? d.keuangan.keluarStok : currentKeuangan.keluarStok,
+            prive: typeof d.keuangan.prive === 'number' ? d.keuangan.prive : currentKeuangan.prive,
+            modalBahan: typeof d.keuangan.modalBahan === 'number' ? d.keuangan.modalBahan : currentKeuangan.modalBahan,
+            hppTerjual: typeof d.keuangan.hppTerjual === 'number' ? d.keuangan.hppTerjual : currentKeuangan.hppTerjual
+          });
+        }
         if (d.transaksiList) useStore.getState().setFullState({ transaksiList: d.transaksiList });
         
         if (showPrompt) await popup('alert', 'Data berhasil ditarik dari Spreadsheet!', "Berhasil");
@@ -181,15 +200,35 @@ export default function App() {
   useEffect(() => {
     document.body.classList.add('dark-mode');
     
-    if (GAS_URL) {
-      pullFromSheets(false);
-    }
+    const initSyncAndPull = async () => {
+      if (GAS_URL) {
+        const isUnsynced = localStorage.getItem('pos_unsynced') === 'true';
+        if (navigator.onLine) {
+          if (isUnsynced) {
+            console.log('Unsynced local changes detected. Syncing to Google Sheets first...');
+            await syncToSheets(false);
+          }
+          console.log('Pulling latest data from Google Sheets...');
+          await pullFromSheets(false);
+          localStorage.setItem('pos_unsynced', 'false');
+        } else {
+          console.log('App is offline, using local cached data.');
+        }
+      }
+    };
+    initSyncAndPull();
   }, []);
 
   useEffect(() => {
-    const handleOnline = () => {
+    const handleOnline = async () => {
       if (GAS_URL) {
-        syncToSheets(false);
+        const isUnsynced = localStorage.getItem('pos_unsynced') === 'true';
+        if (isUnsynced) {
+          await syncToSheets(false);
+          await pullFromSheets(false);
+        } else {
+          await syncToSheets(false);
+        }
       }
     };
     window.addEventListener('online', handleOnline);
@@ -201,10 +240,16 @@ export default function App() {
       isInitialMount.current = false;
       return;
     }
+    
+    localStorage.setItem('pos_unsynced', 'true');
+    
     if (GAS_URL) {
       // Auto-sync ke cloud 5 detik setelah ada perubahan data lokal
-      const timeout = setTimeout(() => {
-        syncToSheets(false);
+      const timeout = setTimeout(async () => {
+        if (navigator.onLine) {
+          await syncToSheets(false);
+          localStorage.setItem('pos_unsynced', 'false');
+        }
       }, 5000);
       return () => clearTimeout(timeout);
     }
