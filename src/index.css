@@ -148,11 +148,45 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(5) > div:nth-
 }
 
 
-#printArea { display: none; }
+#printArea, #printReportArea { display: none; }
 @media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
   body * { visibility: hidden; }
   #printArea, #printArea * { visibility: visible; }
-  #printArea { display: block; position: absolute; left: 0; top: 0; width: 58mm; font-family: 'Courier New', Courier, monospace; font-size: 12px; color: #000; padding: 0; margin: 0; }
-  .print-center { text-align: center; } .print-line { border-bottom: 1px dashed #000; margin: 5px 0; } .print-flex { display: flex; justify-content: space-between; }
+  #printReportArea, #printReportArea * { visibility: visible; }
+  
+  #printArea {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: #000;
+    padding: 0;
+    margin: 0;
+  }
+  
+  #printReportArea {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #1a202c !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 0px;
+    margin: 0;
+  }
+  
+  .print-center { text-align: center; }
+  .print-line { border-bottom: 1px dashed #000; margin: 5px 0; }
+  .print-flex { display: flex; justify-content: space-between; }
   .print-logo { filter: grayscale(100%); width: 50px; margin-bottom: 5px; }
 }

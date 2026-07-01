@@ -19,6 +19,7 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activePrintTx, setActivePrintTx] = useState<any | null>(null);
+  const [activePrintReport, setActivePrintReport] = useState<any | null>(null);
   const { popup } = useAppModal();
   
   const { toko, setToko, menu, cart, stokData, transaksiList, hutangList, bebanAktif, keuangan } = useStore();
@@ -34,6 +35,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const handlePrintReport = (e: any) => {
+      setActivePrintReport(e.detail);
+    };
+    window.addEventListener('print-financial-report', handlePrintReport);
+    return () => window.removeEventListener('print-financial-report', handlePrintReport);
+  }, []);
+
+  useEffect(() => {
     if (activePrintTx) {
       const timer = setTimeout(() => {
         window.print();
@@ -42,6 +51,16 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [activePrintTx]);
+
+  useEffect(() => {
+    if (activePrintReport) {
+      const timer = setTimeout(() => {
+        window.print();
+        setActivePrintReport(null);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activePrintReport]);
 
   useEffect(() => {
     localStorage.setItem('activeTab', activeTab);
@@ -551,6 +570,258 @@ export default function App() {
           
           <div className="print-center" style={{ marginTop: '10px', fontSize: '11px' }}>
             <div>Terima Kasih Atas Kunjungan Anda</div>
+          </div>
+        </div>
+      )}
+
+      {activePrintReport && (
+        <div id="printReportArea" style={{ background: '#ffffff', color: '#1a202c', fontFamily: 'sans-serif', padding: '30px', minHeight: '100vh', boxSizing: 'border-box' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '3px solid #1e3a8a', paddingBottom: '15px', marginBottom: '25px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {toko.logoBase64 && (
+                <img src={toko.logoBase64} style={{ width: '65px', height: '65px', objectFit: 'contain', borderRadius: '8px' }} />
+              )}
+              <div>
+                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e3a8a', margin: 0 }}>{toko.nama || 'Toko Kita'}</h1>
+                <p style={{ fontSize: '12px', color: '#4a5568', margin: '2px 0 0 0' }}>Sistem Point of Sales & Keuangan Terintegrasi</p>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold', color: '#718096', display: 'block' }}>Laporan Komprehensif</span>
+              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#2d3748' }}>Mitra & Investor Report</span>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1a202c', letterSpacing: '-0.5px', textTransform: 'uppercase', margin: 0 }}>LAPORAN ARUS KEUANGAN & LABA RUGI</h2>
+            <p style={{ fontSize: '13px', color: '#4a5568', marginTop: '6px', fontWeight: '500' }}>
+              Periode: <span style={{ color: '#1e3a8a', fontWeight: 'bold' }}>{activePrintReport.filterMulai || 'Semua'}</span> s/d <span style={{ color: '#1e3a8a', fontWeight: 'bold' }}>{activePrintReport.filterAkhir || 'Semua'}</span>
+            </p>
+            <p style={{ fontSize: '11px', color: '#718096', margin: '4px 0 0 0', fontStyle: 'italic' }}>
+              Waktu Cetak: {new Date().toLocaleString('id-ID')}
+            </p>
+          </div>
+
+          {/* Bento Grid Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '30px' }}>
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '15px', textAlign: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#166534', textTransform: 'uppercase', display: 'block', marginBottom: '5px' }}>Total Pendapatan</span>
+              <strong style={{ fontSize: '16px', color: '#15803d' }}>Rp {activePrintReport.pemasukan.toLocaleString('id-ID')}</strong>
+            </div>
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '15px', textAlign: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#991b1b', textTransform: 'uppercase', display: 'block', marginBottom: '5px' }}>Total Pengeluaran</span>
+              <strong style={{ fontSize: '16px', color: '#b91c1c' }}>Rp {activePrintReport.pengeluaran.toLocaleString('id-ID')}</strong>
+            </div>
+            <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', borderRadius: '12px', padding: '15px', textAlign: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#9a3412', textTransform: 'uppercase', display: 'block', marginBottom: '5px' }}>Penarikan Prive</span>
+              <strong style={{ fontSize: '16px', color: '#c2410c' }}>Rp {activePrintReport.prive.toLocaleString('id-ID')}</strong>
+            </div>
+            <div style={{ background: activePrintReport.labaBersih >= 0 ? '#eff6ff' : '#fef2f2', border: activePrintReport.labaBersih >= 0 ? '1px solid #bfdbfe' : '1px solid #fecaca', borderRadius: '12px', padding: '15px', textAlign: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: activePrintReport.labaBersih >= 0 ? '#1e40af' : '#991b1b', textTransform: 'uppercase', display: 'block', marginBottom: '5px' }}>Laba Bersih (Net)</span>
+              <strong style={{ fontSize: '16px', color: activePrintReport.labaBersih >= 0 ? '#1d4ed8' : '#b91c1c' }}>Rp {activePrintReport.labaBersih.toLocaleString('id-ID')}</strong>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '30px' }}>
+            {/* Left Column: Neraca Laba Rugi Komprehensif */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', background: '#fafafa' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e3a8a', borderBottom: '2px solid #cbd5e1', paddingBottom: '8px', marginBottom: '12px', marginTop: 0, textTransform: 'uppercase' }}>Neraca Laba Rugi Komprehensif</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 0, fontSize: '12px' }}>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '8px 0', color: '#4a5568' }}>Penjualan Kotor (Omset)</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: 'bold', color: '#2d3748' }}>Rp {activePrintReport.penjualan.toLocaleString('id-ID')}</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '8px 0', color: '#4a5568' }}>Pelunasan Kasbon (Pendapatan Lain)</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: 'bold', color: '#2d3748' }}>Rp {activePrintReport.pelunasanKasbon.toLocaleString('id-ID')}</td>
+                  </tr>
+                  <tr style={{ borderBottom: '2px solid #cbd5e1', background: '#f1f5f9' }}>
+                    <td style={{ padding: '8px 5px', color: '#1e3a8a', fontWeight: 'bold' }}>Total Pendapatan Kotor</td>
+                    <td style={{ padding: '8px 5px', textAlign: 'right', fontWeight: 'bold', color: '#1e3a8a' }}>Rp {activePrintReport.pemasukan.toLocaleString('id-ID')}</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '8px 0', color: '#e53e3e' }}>(-) HPP (Modal Bahan Terjual)</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500', color: '#c53030' }}>Rp {activePrintReport.hpp.toLocaleString('id-ID')}</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '8px 0', color: '#e53e3e' }}>(-) Belanja Operasional Stok</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500', color: '#c53030' }}>Rp {activePrintReport.belanjaStok.toLocaleString('id-ID')}</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '8px 0', color: '#e53e3e' }}>(-) Pengeluaran Operasional</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500', color: '#c53030' }}>Rp {activePrintReport.pengeluaranOps.toLocaleString('id-ID')}</td>
+                  </tr>
+                  <tr style={{ background: activePrintReport.labaBersih >= 0 ? '#ecfdf5' : '#fef2f2' }}>
+                    <td style={{ padding: '10px 5px', fontWeight: 'bold', color: activePrintReport.labaBersih >= 0 ? '#15803d' : '#991b1b', fontSize: '13px' }}>LABA BERSIH (NET)</td>
+                    <td style={{ padding: '10px 5px', textAlign: 'right', fontWeight: 'bold', color: activePrintReport.labaBersih >= 0 ? '#15803d' : '#991b1b', fontSize: '13px' }}>Rp {activePrintReport.labaBersih.toLocaleString('id-ID')}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Right Column: Status Keseluruhan Modal, ROI, & Kas */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ border: '1px solid #bfdbfe', borderRadius: '12px', padding: '15px', background: '#f8fafc' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#2563eb', borderBottom: '2px solid #bfdbfe', paddingBottom: '6px', marginBottom: '10px', marginTop: 0, textTransform: 'uppercase' }}>Status Modal & ROI</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
+                  <span style={{ color: '#4a5568' }}>Modal Aset (Alat/Mesin):</span>
+                  <span style={{ fontWeight: '600' }}>Rp {activePrintReport.modalAset.toLocaleString('id-ID')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
+                  <span style={{ color: '#4a5568' }}>Modal Bahan Baku:</span>
+                  <span style={{ fontWeight: '600' }}>Rp {activePrintReport.modalBahan.toLocaleString('id-ID')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', borderTop: '1px dashed #cbd5e1', paddingTop: '6px', marginBottom: '10px', fontWeight: 'bold' }}>
+                  <span>Total Modal:</span>
+                  <span style={{ color: '#ea580c' }}>Rp {activePrintReport.totalModal.toLocaleString('id-ID')}</span>
+                </div>
+                <div style={{ background: '#f1f5f9', borderRadius: '8px', padding: '8px 12px', borderLeft: '4px solid #3b82f6' }}>
+                  <span style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold', display: 'block' }}>Balik Modal (ROI) Status</span>
+                  <strong style={{ fontSize: '12px', color: activePrintReport.roi > 0 ? '#16a34a' : activePrintReport.roi < 0 ? '#dc2626' : '#475569' }}>
+                    {activePrintReport.roi > 0 ? `+Rp ${activePrintReport.roi.toLocaleString('id-ID')} (Untung Murni)` : activePrintReport.roi < 0 ? `-Rp ${Math.abs(activePrintReport.roi).toLocaleString('id-ID')} (Sisa Modal)` : 'Break Even Point'}
+                  </strong>
+                </div>
+              </div>
+
+              <div style={{ border: '1px solid #cbd5e1', borderRadius: '12px', padding: '15px', background: '#f8fafc' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#475569', borderBottom: '2px solid #cbd5e1', paddingBottom: '6px', marginBottom: '10px', marginTop: 0, textTransform: 'uppercase' }}>Posisi Uang Kas & Laci</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold', display: 'block' }}>Uang Laci Kas Sekarang</span>
+                    <strong style={{ fontSize: '16px', color: '#0f172a' }}>Rp {activePrintReport.sisaKasLaci.toLocaleString('id-ID')}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed Tables */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px', marginBottom: '30px' }}>
+            {/* Hutang Aktif */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', background: '#fafafa' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#b91c1c', borderBottom: '2px solid #fecaca', paddingBottom: '6px', marginBottom: '10px', marginTop: 0, textTransform: 'uppercase' }}>Kasbon Aktif ({activePrintReport.kasbonAktif.length})</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', margin: 0 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
+                    <th style={{ padding: '6px 4px', color: '#4a5568', fontSize: '10px' }}>Nama Pelanggan</th>
+                    <th style={{ padding: '6px 4px', color: '#4a5568', fontSize: '10px', textAlign: 'right' }}>Sisa Kasbon</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activePrintReport.kasbonAktif.length === 0 ? (
+                    <tr>
+                      <td colSpan={2} style={{ padding: '10px 4px', textAlign: 'center', color: '#a0aec0' }}>Tidak ada kasbon aktif</td>
+                    </tr>
+                  ) : (
+                    activePrintReport.kasbonAktif.map((k: any, index: number) => (
+                      <tr key={index} style={{ borderBottom: '1px solid #edf2f7' }}>
+                        <td style={{ padding: '6px 4px', fontWeight: '500' }}>{k.nama}</td>
+                        <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 'bold', color: '#e53e3e' }}>Rp {k.sisa.toLocaleString('id-ID')}</td>
+                      </tr>
+                    ))
+                  )}
+                  <tr style={{ background: '#fef2f2', fontWeight: 'bold', borderTop: '2px solid #cbd5e1' }}>
+                    <td style={{ padding: '6px 4px' }}>Total Kasbon Aktif</td>
+                    <td style={{ padding: '6px 4px', textAlign: 'right', color: '#b91c1c' }}>Rp {activePrintReport.totalKasbonAktif.toLocaleString('id-ID')}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pelunasan Kasbon */}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', background: '#fafafa' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#16a34a', borderBottom: '2px solid #bbf7d0', paddingBottom: '6px', marginBottom: '10px', marginTop: 0, textTransform: 'uppercase' }}>Pelunasan Kasbon Periode Ini</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', margin: 0 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
+                    <th style={{ padding: '6px 4px', color: '#4a5568', fontSize: '10px' }}>Tgl</th>
+                    <th style={{ padding: '6px 4px', color: '#4a5568', fontSize: '10px' }}>Nama</th>
+                    <th style={{ padding: '6px 4px', color: '#4a5568', fontSize: '10px', textAlign: 'right' }}>Jumlah</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activePrintReport.transaksi.filter((tx: any) => tx.tipe === 'Pelunasan Kasbon').length === 0 ? (
+                    <tr>
+                      <td colSpan={3} style={{ padding: '10px 4px', textAlign: 'center', color: '#a0aec0' }}>Tidak ada pelunasan kasbon</td>
+                    </tr>
+                  ) : (
+                    activePrintReport.transaksi.filter((tx: any) => tx.tipe === 'Pelunasan Kasbon').map((tx: any, index: number) => (
+                      <tr key={index} style={{ borderBottom: '1px solid #edf2f7' }}>
+                        <td style={{ padding: '6px 4px', color: '#718096' }}>{tx.tgl}</td>
+                        <td style={{ padding: '6px 4px', fontWeight: '500' }}>{tx.ident}</td>
+                        <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 'bold', color: '#16a34a' }}>Rp {tx.total.toLocaleString('id-ID')}</td>
+                      </tr>
+                    ))
+                  )}
+                  <tr style={{ background: '#f0fdf4', fontWeight: 'bold', borderTop: '2px solid #cbd5e1' }}>
+                    <td colSpan={2} style={{ padding: '6px 4px' }}>Total Pelunasan</td>
+                    <td style={{ padding: '6px 4px', textAlign: 'right', color: '#15803d' }}>
+                      Rp {activePrintReport.transaksi.filter((tx: any) => tx.tipe === 'Pelunasan Kasbon').reduce((acc: number, tx: any) => acc + tx.total, 0).toLocaleString('id-ID')}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Detailed Expenses, Purchases, Prives */}
+          <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', marginBottom: '40px', background: '#fafafa' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#b91c1c', borderBottom: '2px solid #fecaca', paddingBottom: '6px', marginBottom: '10px', marginTop: 0, textTransform: 'uppercase' }}>Rincian Pengeluaran, Belanja Stok & Prive</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', margin: 0 }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
+                  <th style={{ padding: '8px', color: '#4a5568' }}>Tanggal</th>
+                  <th style={{ padding: '8px', color: '#4a5568' }}>Kategori</th>
+                  <th style={{ padding: '8px', color: '#4a5568' }}>Keterangan / Detail</th>
+                  <th style={{ padding: '8px', color: '#4a5568', textAlign: 'right' }}>Nominal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activePrintReport.transaksi.filter((tx: any) => ['Pengeluaran', 'Belanja Stok', 'Prive'].includes(tx.tipe)).length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ padding: '15px', textAlign: 'center', color: '#a0aec0' }}>Tidak ada data pengeluaran operasional / belanja stok / prive</td>
+                  </tr>
+                ) : (
+                  activePrintReport.transaksi.filter((tx: any) => ['Pengeluaran', 'Belanja Stok', 'Prive'].includes(tx.tipe)).map((tx: any, index: number) => (
+                    <tr key={index} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '8px', color: '#718096' }}>{tx.tgl}</td>
+                      <td style={{ padding: '8px' }}>
+                        <span style={{
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          color: tx.tipe === 'Prive' ? '#c2410c' : tx.tipe === 'Belanja Stok' ? '#b91c1c' : '#7f1d1d',
+                          background: tx.tipe === 'Prive' ? '#fff7ed' : tx.tipe === 'Belanja Stok' ? '#fef2f2' : '#fef2f2',
+                        }}>
+                          {tx.tipe}
+                        </span>
+                      </td>
+                      <td style={{ padding: '8px', fontWeight: '500' }}>{tx.ident}</td>
+                      <td style={{ padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#c53030' }}>Rp {tx.total.toLocaleString('id-ID')}</td>
+                    </tr>
+                  ))
+                )}
+                <tr style={{ background: '#fef2f2', fontWeight: 'bold', fontSize: '11px', borderTop: '2px solid #cbd5e1' }}>
+                  <td colSpan={3} style={{ padding: '8px' }}>Total Pengeluaran & Prive (Arus Kas Keluar)</td>
+                  <td style={{ padding: '8px', textAlign: 'right', color: '#b91c1c' }}>Rp {activePrintReport.pengeluaran.toLocaleString('id-ID')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer Signature Area */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '100px', marginTop: '50px', fontSize: '12px', textAlign: 'center' }}>
+            <div>
+              <p style={{ margin: '0 0 60px 0', color: '#4a5568' }}>Dibuat Oleh,</p>
+              <strong style={{ borderTop: '1px solid #cbd5e1', paddingTop: '5px', display: 'inline-block', width: '200px' }}>Manajemen Toko</strong>
+            </div>
+            <div>
+              <p style={{ margin: '0 0 60px 0', color: '#4a5568' }}>Disetujui Oleh,</p>
+              <strong style={{ borderTop: '1px solid #cbd5e1', paddingTop: '5px', display: 'inline-block', width: '200px' }}>Mitra / Investor</strong>
+            </div>
           </div>
         </div>
       )}

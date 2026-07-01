@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { CheckCircle2, Check } from 'lucide-react';
+import { CheckCircle2, Check, Printer } from 'lucide-react';
 import { useAppModal } from './ModalContext';
 
 export default function TabLaporan() {
@@ -201,6 +201,33 @@ export default function TabLaporan() {
     await popup('alert', msg, `Detail Transaksi`);
   };
 
+  const handlePrintReport = () => {
+    window.dispatchEvent(new CustomEvent('print-financial-report', {
+      detail: {
+        filterMulai: filterTxMulai,
+        filterAkhir: filterTxAkhir,
+        searchName,
+        pemasukan: sumIn,
+        pengeluaran: sumOut,
+        penjualan: filteredTx.filter(tx => (tx.tipe || 'Penjualan') === 'Penjualan').reduce((acc, tx) => acc + tx.total, 0),
+        pelunasanKasbon: filteredTx.filter(tx => tx.tipe === 'Pelunasan Kasbon').reduce((acc, tx) => acc + tx.total, 0),
+        pengeluaranOps: filteredTx.filter(tx => tx.tipe === 'Pengeluaran').reduce((acc, tx) => acc + tx.total, 0),
+        belanjaStok: filteredTx.filter(tx => tx.tipe === 'Belanja Stok').reduce((acc, tx) => acc + tx.total, 0),
+        prive: filteredTx.filter(tx => tx.tipe === 'Prive').reduce((acc, tx) => acc + tx.total, 0),
+        hpp: filteredTx.reduce((acc, tx) => acc + (tx.hppTotal || 0), 0),
+        labaBersih: bersihFiltered,
+        modalAset,
+        modalBahan,
+        totalModal,
+        roi,
+        sisaKasLaci,
+        kasbonAktif: filteredHutang,
+        totalKasbonAktif: filteredHutang.reduce((acc, h) => acc + h.sisa, 0),
+        transaksi: filteredTx
+      }
+    }));
+  };
+
   return (
     <>
       <div className="clay-card">
@@ -214,11 +241,14 @@ export default function TabLaporan() {
         </div>
         <hr style={{ border: 0, borderTop: '1px dashed rgba(163,177,198,0.4)', margin: '10px 0 15px 0' }} />
 
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-          <input type="text" placeholder="Cari nama..." className="btn-input" style={{ margin: 0, fontSize: '12px', flex: 1 }} value={searchName} onChange={e => setSearchName(e.target.value)} />
-          <input type="date" className="btn-input" style={{ margin: 0, fontSize: '12px' }} value={filterTxMulai} onChange={e => setFilterTxMulai(e.target.value)} />
-          <input type="date" className="btn-input" style={{ margin: 0, fontSize: '12px' }} value={filterTxAkhir} onChange={e => setFilterTxAkhir(e.target.value)} />
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
+          <input type="text" placeholder="Cari nama..." className="btn-input" style={{ margin: 0, fontSize: '12px', flex: '1 1 150px' }} value={searchName} onChange={e => setSearchName(e.target.value)} />
+          <input type="date" className="btn-input" style={{ margin: 0, fontSize: '12px', flex: '1 1 120px' }} value={filterTxMulai} onChange={e => setFilterTxMulai(e.target.value)} />
+          <input type="date" className="btn-input" style={{ margin: 0, fontSize: '12px', flex: '1 1 120px' }} value={filterTxAkhir} onChange={e => setFilterTxAkhir(e.target.value)} />
           <button className="btn bg-dim" style={{ margin: 0, padding: '10px 15px', fontSize: '12px', color: 'var(--text-main)' }} onClick={() => { setFilterTxMulai(''); setFilterTxAkhir(''); setSearchName(''); }}>Reset</button>
+          <button className="btn bg-blue" style={{ margin: 0, padding: '10px 15px', fontSize: '12px', color: 'white' }} onClick={handlePrintReport}>
+            <Printer size={14} /> Cetak PDF Laporan
+          </button>
         </div>
         <table>
           <thead><tr><th>Tgl</th><th>Keterangan / Tipe</th><th>Total</th><th>Via</th><th style={{textAlign: 'right'}}>Aksi</th></tr></thead>
