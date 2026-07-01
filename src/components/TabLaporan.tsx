@@ -362,7 +362,7 @@ export default function TabLaporan() {
       </div>
 
       <div className="clay-card">
-        <h3 style={{ color: 'var(--blue)', marginBottom: '15px' }}>Status Keseluruhan Modal & ROI (Balik Modal)</h3>
+        <h3 style={{ fontStyle: 'italic', marginBottom: '15px' }}>Status Keseluruhan Modal & ROI (Balik Modal)</h3>
         <div className="flex-between"><span>Modal Aset (Alat/Mesin)</span> <strong>Rp {modalAset.toLocaleString('id-ID')}</strong></div>
         <div className="flex-between"><span>Modal Bahan Baku (Awal)</span> <strong>Rp {modalBahan.toLocaleString('id-ID')}</strong></div>
         <hr style={{ border: 0, borderTop: '1px dashed rgba(163,177,198,0.4)', margin: '10px 0' }} />

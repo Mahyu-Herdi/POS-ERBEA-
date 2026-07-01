@@ -195,7 +195,7 @@ export default function TabMasterMenu() {
                   >
                     <span>{s.nama} (Rp {s.hargaPerUnit}/{s.unit})</span>
                     {resepSelect === s.id && (
-                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--blue)" strokeWidth="3" fill="none">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="3" fill="none">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     )}

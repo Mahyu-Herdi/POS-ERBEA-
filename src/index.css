@@ -2,14 +2,14 @@
 @import "tailwindcss";
 
 :root {
-  --bg-color: #6F4E37;
+  --bg-color: #FFFFFF;
   --clay-bg: #875F43;
   --input-bg: #3E2B1F;
   --sub-card-bg: #4A3425;
   --clay-shadow-out: 12px 12px 24px rgba(40, 20, 10, 0.8), -6px -6px 16px rgba(120, 85, 65, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
   --clay-shadow-in: inset 8px 8px 16px rgba(40, 20, 10, 0.9), inset -4px -4px 10px rgba(120, 85, 65, 0.2);
   --btn-shadow-out: 12px 12px 24px rgba(40, 20, 10, 0.8), -6px -6px 16px rgba(120, 85, 65, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
-  --text-main: #FDF5E6;
+  --text-main: #FFFFFF;
   --text-muted: #DFCCBF;
   --blue: #5CCFFF;
   --red: #FF7575;
@@ -27,9 +27,9 @@ body.neutral-mode {
   --clay-bg: #F5EFEB;
   --input-bg: #DCD3C3;
   --sub-card-bg: #FCF9F2;
-  --clay-shadow-out: 12px 12px 24px rgba(185, 175, 160, 0.65), -8px -8px 16px rgba(255, 255, 255, 1);
-  --clay-shadow-in: inset 6px 6px 12px rgba(185, 175, 160, 0.8), inset -4px -4px 10px rgba(255, 255, 255, 1);
-  --btn-shadow-out: 12px 12px 24px rgba(185, 175, 160, 0.65), -8px -8px 16px rgba(255, 255, 255, 1);
+  --clay-shadow-out: 6px 6px 12px rgba(185, 175, 160, 0.4), -4px -4px 10px rgba(255, 255, 255, 1);
+  --clay-shadow-in: inset 3px 3px 6px rgba(185, 175, 160, 0.4), inset -3px -3px 6px rgba(255, 255, 255, 1);
+  --btn-shadow-out: 5px 5px 10px rgba(185, 175, 160, 0.4), -4px -4px 8px rgba(255, 255, 255, 1);
   --text-main: #2D2A26;
   --text-muted: #8C857B;
   --blue: #0EA5E9;
@@ -104,8 +104,14 @@ header { padding: clamp(16px, 2vw, 24px) clamp(16px, 4vw, 32px); position: stick
 }
 .btn-input:focus { box-shadow: var(--clay-shadow-out); border: none; }
 
-.text-blue { color: var(--blue); } .text-red { color: var(--red); } .text-green { color: var(--green); } .text-orange { color: var(--orange); }
-.bg-blue { color: var(--blue); } .bg-green { color: var(--green); } .bg-red { color: var(--red); } .bg-orange { color: var(--orange); }
+.text-blue { color: var(--text-main); font-weight: 900; }
+.text-red { color: var(--text-main); font-style: italic; font-weight: normal; }
+.text-green { color: var(--text-main); font-style: italic; font-weight: 800; }
+.text-orange { color: var(--text-main); font-weight: 700; }
+.bg-blue { color: var(--text-main); font-weight: 900; }
+.bg-green { color: var(--text-main); font-style: italic; font-weight: 800; }
+.bg-red { color: var(--text-main); font-style: italic; font-weight: normal; }
+.bg-orange { color: var(--text-main); font-weight: 700; }
 .bg-dim { background: var(--sub-card-bg); box-shadow: var(--clay-shadow-in); border: none; border-radius: 24px; padding: clamp(16px, 2vw, 24px); }
 
 .split-layout { display: flex; flex-direction: column; gap: clamp(24px, 3vw, 40px); }
@@ -125,7 +131,7 @@ header { padding: clamp(16px, 2vw, 24px) clamp(16px, 4vw, 32px); position: stick
   cursor: pointer; color: var(--text-muted); font-weight: 700; padding: 8px 16px; 
   border-radius: 24px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.nav-item.active { box-shadow: var(--clay-shadow-in); color: var(--blue); transform: scale(1.05); border: none; }
+.nav-item.active { box-shadow: var(--clay-shadow-in); color: var(--text-main); font-weight: 900; font-style: italic; transform: scale(1.05); border: none; }
 .nav-item svg { width: clamp(24px, 2vw, 24px); height: clamp(24px, 2vw, 24px); fill: currentColor; margin-bottom: 8px; pointer-events: none; }
 
 table { width: 100%; border-collapse: separate; border-spacing: 0 clamp(8px, 1.5vw, 16px); margin-top: 16px; font-size: clamp(14px, 1.3vw, 16px); }
@@ -149,7 +155,7 @@ td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px;
 .modal-box {
   width: 100%; max-width: 480px; text-align: left; max-height: 90vh; overflow-y: auto;
   transform: scale(0.9) translateY(20px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  background: var(--bg-color); border: none;
+  background: var(--clay-bg); border: none;
   border-radius: 32px; box-shadow: var(--clay-shadow-out);
 }
 .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
@@ -158,7 +164,7 @@ td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px;
 .spinner {
   width: 44px; height: 44px;
   border: 5px solid var(--input-bg);
-  border-top: 5px solid var(--blue);
+  border-top: 5px solid var(--text-main);
   border-radius: 50%;
   animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
   box-shadow: var(--clay-shadow-out);
@@ -166,7 +172,7 @@ td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px;
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .sub-tab-btn { flex:1; font-size:clamp(12px, 1.2vw, 14px); font-weight:600; padding:clamp(10px, 1.5vw, 14px); background:transparent; box-shadow:none; border: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 16px; margin: 0 4px; }
-.sub-tab-btn.active { background:var(--clay-bg); box-shadow:var(--btn-shadow-out); color:var(--blue); border: var(--clay-border); }
+.sub-tab-btn.active { background:var(--clay-bg); box-shadow:var(--btn-shadow-out); color:var(--text-main); font-weight: 900; font-style: italic; border: var(--clay-border); }
 .sub-tab-content { display: none; } .sub-tab-content.active { display: block; animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
 
 h1, h2, h3, h4, h5, h6 { font-weight: 900; letter-spacing: -0.02em; color: var(--text-main); }
