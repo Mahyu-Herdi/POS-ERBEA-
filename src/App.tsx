@@ -18,6 +18,7 @@ export default function App() {
   const [activeSubTab, setActiveSubTab] = useState('sub-sistem');
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem('pos_theme') || 'neutral');
   const [activePrintTx, setActivePrintTx] = useState<any | null>(null);
   const [activePrintReport, setActivePrintReport] = useState<any | null>(null);
   const { popup } = useAppModal();
@@ -314,11 +315,12 @@ export default function App() {
   };
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('pos_theme');
-    if (savedTheme === 'light') {
-      document.body.classList.remove('dark-mode');
-    } else {
+    const savedTheme = localStorage.getItem('pos_theme') || 'neutral';
+    document.body.classList.remove('dark-mode', 'neutral-mode');
+    if (savedTheme === 'dark') {
       document.body.classList.add('dark-mode');
+    } else if (savedTheme === 'neutral') {
+      document.body.classList.add('neutral-mode');
     }
     
     const initSyncAndPull = async () => {
@@ -537,15 +539,24 @@ export default function App() {
               </div>
 
               <div className="flex-between">
-                <span style={{ fontWeight: 600, fontSize: '14px' }}>Tema Gelap (Dark Mode)</span>
+                <span style={{ fontWeight: 600, fontSize: '14px' }}>Tampilan Tema</span>
                 <button 
                   className="btn bg-blue" 
                   onClick={() => {
-                    const isDark = document.body.classList.toggle('dark-mode');
-                    localStorage.setItem('pos_theme', isDark ? 'dark' : 'light');
+                    let nextTheme = 'neutral';
+                    if (themeMode === 'neutral') nextTheme = 'light';
+                    else if (themeMode === 'light') nextTheme = 'dark';
+                    else if (themeMode === 'dark') nextTheme = 'neutral';
+                    
+                    document.body.classList.remove('dark-mode', 'neutral-mode');
+                    if (nextTheme === 'dark') document.body.classList.add('dark-mode');
+                    else if (nextTheme === 'neutral') document.body.classList.add('neutral-mode');
+                    
+                    localStorage.setItem('pos_theme', nextTheme);
+                    setThemeMode(nextTheme);
                   }}
                 >
-                  Alihkan Tema
+                  Mode: {themeMode === 'dark' ? 'Gelap' : themeMode === 'light' ? 'Terang' : 'Netral'}
                 </button>
               </div>
             </motion.div>

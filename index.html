@@ -8,6 +8,16 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon.png" />
     <title>Smart POS Warkop</title>
+    <script>
+      try {
+        const savedTheme = localStorage.getItem('pos_theme') || 'neutral';
+        if (savedTheme === 'dark') {
+          document.body.classList.add('dark-mode');
+        } else if (savedTheme === 'neutral') {
+          document.body.classList.add('neutral-mode');
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

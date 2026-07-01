@@ -196,7 +196,7 @@ export default function TabKasir() {
                 const color = md ? 'var(--red)' : 'var(--green)';
                 const text = md ? `${md.items.length} Item` : 'Kosong (Pilih)';
                 return (
-                  <div key={tName} className="btn" style={{ border: `2px solid ${color}`, padding: '15px 10px', flexDirection: 'column', gap: '5px' }} onClick={() => pilihMejaDariModal(tName)}>
+                  <div key={tName} className="btn" style={{ padding: '15px 10px', flexDirection: 'column', gap: '5px' }} onClick={() => pilihMejaDariModal(tName)}>
                     <div style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>{tName}</div>
                     <div style={{ fontSize: '11px', color }}>{text}</div>
                   </div>

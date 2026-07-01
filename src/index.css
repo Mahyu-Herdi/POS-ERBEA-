@@ -2,42 +2,64 @@
 @import "tailwindcss";
 
 :root {
-  --bg-color: #EDE7DB;
-  --clay-bg: #FFFFFF;
-  --input-bg: #E0D8C8;
-  --clay-shadow-out: 10px 10px 20px rgba(180, 170, 150, 0.5), -8px -8px 16px rgba(255, 255, 255, 1);
-  --clay-shadow-in: inset 6px 6px 12px rgba(180, 170, 150, 0.85), inset -4px -4px 10px rgba(255, 255, 255, 1);
-  --btn-shadow-out: 10px 10px 20px rgba(180, 170, 150, 0.5), -8px -8px 16px rgba(255, 255, 255, 1);
-  --text-main: #181512;
-  --text-muted: #625A51;
-  --blue: #F59E0B;
-  --red: #F43F5E;
-  --green: #10B981;
-  --orange: #A855F7;
-  --purple: #A855F7;
+  --bg-color: #6F4E37;
+  --clay-bg: #875F43;
+  --input-bg: #3E2B1F;
+  --sub-card-bg: #4A3425;
+  --clay-shadow-out: 12px 12px 24px rgba(40, 20, 10, 0.8), -6px -6px 16px rgba(120, 85, 65, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
+  --clay-shadow-in: inset 8px 8px 16px rgba(40, 20, 10, 0.9), inset -4px -4px 10px rgba(120, 85, 65, 0.2);
+  --btn-shadow-out: 12px 12px 24px rgba(40, 20, 10, 0.8), -6px -6px 16px rgba(120, 85, 65, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
+  --text-main: #FDF5E6;
+  --text-muted: #DFCCBF;
+  --blue: #5CCFFF;
+  --red: #FF7575;
+  --green: #58E88F;
+  --orange: #FFA07A;
+  --purple: #D696FF;
   --border-radius: 30px;
+  --clay-border: none;
+  --input-border: none;
+  --overlay-bg: rgba(62, 43, 31, 0.75);
+}
+
+body.neutral-mode {
+  --bg-color: #E6DFD1;
+  --clay-bg: #F5EFEB;
+  --input-bg: #DCD3C3;
+  --sub-card-bg: #FCF9F2;
+  --clay-shadow-out: 12px 12px 24px rgba(185, 175, 160, 0.65), -8px -8px 16px rgba(255, 255, 255, 1);
+  --clay-shadow-in: inset 6px 6px 12px rgba(185, 175, 160, 0.8), inset -4px -4px 10px rgba(255, 255, 255, 1);
+  --btn-shadow-out: 12px 12px 24px rgba(185, 175, 160, 0.65), -8px -8px 16px rgba(255, 255, 255, 1);
+  --text-main: #2D2A26;
+  --text-muted: #8C857B;
+  --blue: #0EA5E9;
+  --red: #EF4444;
+  --green: #10B981;
+  --orange: #F97316;
+  --purple: #A855F7;
   --clay-border: none;
   --input-border: none;
   --overlay-bg: rgba(45, 42, 38, 0.45);
 }
 
 body.dark-mode {
-  --bg-color: #0F172A;
-  --clay-bg: #1E293B;
-  --input-bg: #0B1120;
-  --clay-shadow-out: 12px 12px 24px rgba(0, 0, 0, 0.6), -6px -6px 16px rgba(45, 60, 85, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
-  --clay-shadow-in: inset 8px 8px 16px rgba(0, 0, 0, 0.8), inset -4px -4px 10px rgba(45, 60, 85, 0.2);
-  --btn-shadow-out: 12px 12px 24px rgba(0, 0, 0, 0.6), -6px -6px 16px rgba(45, 60, 85, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
-  --blue: #F59E0B;
-  --red: #F43F5E;
-  --green: #10B981;
-  --orange: #A855F7;
-  --purple: #A855F7;
+  --bg-color: #2A1B13;
+  --clay-bg: #38251A;
+  --input-bg: #1D120C;
+  --sub-card-bg: #281A12;
+  --clay-shadow-out: 12px 12px 24px rgba(15, 8, 5, 0.9), -6px -6px 16px rgba(70, 45, 30, 0.45), inset 2px 2px 4px rgba(255, 255, 255, 0.1);
+  --clay-shadow-in: inset 8px 8px 16px rgba(15, 8, 5, 0.95), inset -4px -4px 10px rgba(70, 45, 30, 0.2);
+  --btn-shadow-out: 12px 12px 24px rgba(15, 8, 5, 0.9), -6px -6px 16px rgba(70, 45, 30, 0.45), inset 2px 2px 4px rgba(255, 255, 255, 0.1);
+  --text-main: #FDF5E6;
+  --text-muted: #BCA393;
+  --blue: #70D6FF;
+  --red: #FF8787;
+  --green: #69F0AE;
+  --orange: #FFB380;
+  --purple: #E0AAFF;
   --clay-border: none;
   --input-border: none;
-  --overlay-bg: rgba(15, 23, 42, 0.75);
+  --overlay-bg: rgba(29, 18, 12, 0.85);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -84,7 +106,7 @@ header { padding: clamp(16px, 2vw, 24px) clamp(16px, 4vw, 32px); position: stick
 
 .text-blue { color: var(--blue); } .text-red { color: var(--red); } .text-green { color: var(--green); } .text-orange { color: var(--orange); }
 .bg-blue { color: var(--blue); } .bg-green { color: var(--green); } .bg-red { color: var(--red); } .bg-orange { color: var(--orange); }
-.bg-dim { background: var(--input-bg); box-shadow: var(--clay-shadow-in); border: none; border-radius: 24px; padding: clamp(16px, 2vw, 24px); }
+.bg-dim { background: var(--sub-card-bg); box-shadow: var(--clay-shadow-in); border: none; border-radius: 24px; padding: clamp(16px, 2vw, 24px); }
 
 .split-layout { display: flex; flex-direction: column; gap: clamp(24px, 3vw, 40px); }
 @media (min-width: 900px) { .split-layout { flex-direction: row; } .left-panel { flex: 2; } .right-panel { flex: 1.2; } }
@@ -108,7 +130,7 @@ header { padding: clamp(16px, 2vw, 24px) clamp(16px, 4vw, 32px); position: stick
 
 table { width: 100%; border-collapse: separate; border-spacing: 0 clamp(8px, 1.5vw, 16px); margin-top: 16px; font-size: clamp(14px, 1.3vw, 16px); }
 th { color: var(--text-muted); font-weight: 700; text-align: left; padding: 0 clamp(8px, 1.5vw, 16px); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
-td { padding: clamp(16px, 1.5vw, 16px) clamp(8px, 1.5vw, 16px); background: var(--input-bg); box-shadow: var(--clay-shadow-in); border: none; }
+td { padding: clamp(16px, 1.5vw, 16px) clamp(8px, 1.5vw, 16px); background: var(--sub-card-bg); box-shadow: var(--clay-shadow-in); border: none; }
 td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
 td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
 

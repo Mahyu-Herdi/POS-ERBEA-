@@ -342,7 +342,7 @@ export default function TabLaporan() {
           <button className="btn bg-red" style={{ width: '100%', marginTop: '15px' }} onClick={tambahPengeluaran}>Catat Pengeluaran</button>
         </div>
 
-        <div className="clay-card" style={{ flex: 1, border: '2px solid var(--orange)' }}>
+        <div className="clay-card" style={{ flex: 1 }}>
           <h3 style={{ color: 'var(--orange)', marginBottom: '15px' }}>Tarik Prive (Kebutuhan Pribadi)</h3>
           <p style={{ fontSize: '11px', marginBottom: '10px' }}>Penarikan ini dicatat sebagai arus keluar & memotong laci kas.</p>
           <input type="text" inputMode="numeric" className="btn-input" placeholder="Nominal Tarik Prive (Rp)" value={inputPrive} onChange={e => setInputPrive(formatUang(e.target.value))} />
@@ -361,7 +361,7 @@ export default function TabLaporan() {
         <div className="flex-between text-green" style={{ fontSize: '18px' }}><span>LABA BERSIH (NET)</span> <strong>Rp {bersih.toLocaleString('id-ID')}</strong></div>
       </div>
 
-      <div className="clay-card" style={{ border: '1px solid var(--blue)' }}>
+      <div className="clay-card">
         <h3 style={{ color: 'var(--blue)', marginBottom: '15px' }}>Status Keseluruhan Modal & ROI (Balik Modal)</h3>
         <div className="flex-between"><span>Modal Aset (Alat/Mesin)</span> <strong>Rp {modalAset.toLocaleString('id-ID')}</strong></div>
         <div className="flex-between"><span>Modal Bahan Baku (Awal)</span> <strong>Rp {modalBahan.toLocaleString('id-ID')}</strong></div>
