@@ -11,8 +11,19 @@ export default function TabStok() {
   const [searchName, setSearchName] = useState('');
   const { popup } = useAppModal();
 
-  const catatMutasi = (item: string, tipe: string, qty: number) => {
-    addStokHistory({ tgl: getToday(), item, tipe, qty });
+  const catatMutasi = (stokId: string, nama: string, tipe: string, qty: number, sisaSebelum: number, sisaSetelah: number) => {
+    addStokHistory({
+      id: 'h' + Date.now() + Math.random().toString(36).substring(2, 6),
+      stokId,
+      nama,
+      item: nama,
+      tipe,
+      qty,
+      sisaSebelum,
+      sisaSetelah,
+      tgl: getToday(),
+      keterangan: ''
+    });
   };
 
   const bikinStokBaru = async () => {
@@ -29,10 +40,11 @@ export default function TabStok() {
     const totalModalStok = harga * qtyAwal;
     updateKeuangan({ modalBahan: keuangan.modalBahan + totalModalStok });
     
-    addStok({ id: 's' + Date.now(), nama, sisa: qtyAwal, unit: satuan, hargaPerUnit: harga });
+    const newId = 's' + Date.now();
+    addStok({ id: newId, nama, sisa: qtyAwal, unit: satuan, hargaPerUnit: harga });
     
     if (qtyAwal > 0) {
-      catatMutasi(nama, 'Modal Awal', qtyAwal);
+      catatMutasi(newId, nama, 'Modal Awal', qtyAwal, 0, qtyAwal);
     }
     
     await popup('alert', `Item ${nama} ditambahkan.\nStok Awal: ${qtyAwal} ${satuan}\nModal Awal: Rp ${totalModalStok.toLocaleString('id-ID')}`, 'Berhasil');
@@ -47,7 +59,7 @@ export default function TabStok() {
         const totalBiaya = hargaSatuan * n;
         updateKeuangan({ keluarStok: keuangan.keluarStok + totalBiaya });
         updateStok(idx, { sisa: item.sisa + n, hargaPerUnit: hargaSatuan });
-        catatMutasi(item.nama, 'Masuk (Beli)', n);
+        catatMutasi(item.id, item.nama, 'Masuk (Beli)', n, item.sisa, item.sisa + n);
 
         const txRecord = {
           tgl: new Date().toLocaleString('id-ID'),
@@ -71,7 +83,7 @@ export default function TabStok() {
     const n = await popup('prompt_float', `Berapa ${item.unit} yang terpakai manual?`, "Pengurangan Stok");
     if (n && n > 0 && item.sisa >= n) {
       updateStok(idx, { sisa: item.sisa - n });
-      catatMutasi(item.nama, 'Keluar (Pakai)', n);
+      catatMutasi(item.id, item.nama, 'Keluar (Pakai)', n, item.sisa, item.sisa - n);
     } else if (n) {
       await popup('alert', "Stok tidak mencukupi!", "Gagal");
     }

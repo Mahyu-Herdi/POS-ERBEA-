@@ -177,7 +177,19 @@ export default function TabKasir() {
               const newSisa = Math.max(0, stokItem.sisa - totalTerpakai);
               const sIdx = stokData.findIndex(s => s.id === stokItem.id);
               if (sIdx >= 0) updateStok(sIdx, { sisa: newSisa });
-              addStokHistory({ tgl: getToday(), item: stokItem.nama, tipe: 'Keluar (Penjualan)', qty: totalTerpakai, txId: txId });
+              addStokHistory({
+                id: 'h' + Date.now() + Math.random().toString(36).substring(2, 6),
+                stokId: stokItem.id,
+                nama: stokItem.nama,
+                item: stokItem.nama,
+                tipe: 'Keluar (Penjualan)',
+                qty: totalTerpakai,
+                sisaSebelum: stokItem.sisa,
+                sisaSetelah: newSisa,
+                tgl: getToday(),
+                keterangan: '',
+                txId: txId
+              });
             }
           });
         } else if (masterMenu.hppBahan) {

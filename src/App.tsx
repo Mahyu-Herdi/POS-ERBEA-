@@ -224,7 +224,26 @@ export default function App() {
         }
         if (d.transaksiList) useStore.getState().setFullState({ transaksiList: d.transaksiList });
         if (d.hutangList) useStore.getState().updateHutang(d.hutangList);
-        if (d.stokHistory) useStore.getState().setFullState({ stokHistory: d.stokHistory });
+        if (d.stokHistory) {
+          const sanitizedHistory = d.stokHistory.map((h: any) => {
+            const namaVal = h.nama || h.item || '';
+            return {
+              ...h,
+              id: h.id || '',
+              stokId: h.stokId || '',
+              nama: namaVal,
+              item: namaVal,
+              tipe: h.tipe || '',
+              qty: Number(h.qty) || 0,
+              sisaSebelum: Number(h.sisaSebelum) || 0,
+              sisaSetelah: Number(h.sisaSetelah) || 0,
+              tgl: h.tgl || '',
+              keterangan: h.keterangan || '',
+              txId: h.txId || ''
+            };
+          });
+          useStore.getState().setFullState({ stokHistory: sanitizedHistory });
+        }
         
         if (showPrompt) await popup('alert', 'Data berhasil ditarik dari Spreadsheet!', "Berhasil");
       } else {
