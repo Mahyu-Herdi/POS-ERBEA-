@@ -157,8 +157,10 @@ export default function TabKasir() {
       return;
     }
 
+    const txId = Date.now();
     let newHppTerjual = keuangan.hppTerjual;
     let hppTx = 0;
+    let bebanOpTx = 0;
     itemsPaid.forEach(cartItem => {
       const masterMenu = menu.find(m => m.id === cartItem.id);
       if (masterMenu) {
@@ -184,11 +186,11 @@ export default function TabKasir() {
         
         newHppTerjual += itemHppTotal;
         hppTx += itemHppTotal;
+        bebanOpTx += (masterMenu.hppOp || 0) * cartItem.qty;
       }
     });
     updateKeuangan({ hppTerjual: newHppTerjual });
 
-    const txId = Date.now();
     const txRecord = {
       id: txId,
       tgl: new Date().toLocaleString('id-ID'),
@@ -199,7 +201,8 @@ export default function TabKasir() {
       total,
       bayar: metodeBayar === 'Cash' ? uang : total,
       metode: metodeBayar,
-      hppTotal: hppTx
+      hppTotal: hppTx,
+      bebanOpTotal: bebanOpTx
     };
 
     if (metodeBayar === 'Hutang') {

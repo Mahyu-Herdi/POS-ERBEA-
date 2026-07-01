@@ -176,13 +176,28 @@ export default function TabLaporan() {
   const tampilkanDetailTransaksi = async (tx: any) => {
     const labelTipe = tx.tipe || 'Penjualan';
     let detailItems = '';
+    let calculatedHpp = tx.hppTotal || 0;
+    let calculatedBebanOp = tx.bebanOpTotal || 0;
+
     if (tx.items && tx.items.length > 0) {
       detailItems = tx.items.map((it: any) => `• ${it.name} x${it.qty} (@Rp ${it.harga.toLocaleString('id-ID')})`).join('\n');
+      
+      if (calculatedHpp === 0 || calculatedBebanOp === 0) {
+        tx.items.forEach((it: any) => {
+          const m = useStore.getState().menu.find((x: any) => x.id === it.id || x.name === it.name);
+          if (m) {
+            if (calculatedHpp === 0) calculatedHpp += (m.hppBahan || 0) * it.qty;
+            if (calculatedBebanOp === 0) calculatedBebanOp += (m.hppOp || 0) * it.qty;
+          }
+        });
+      }
     } else {
       detailItems = 'Tidak ada rincian item.';
     }
     const totalFormat = tx.total.toLocaleString('id-ID');
-    const msg = `Tipe: ${labelTipe}\nKeterangan/Meja: ${tx.ident}\nTanggal: ${tx.tgl}\nMetode: ${tx.metode}\n\nRincian Pesanan:\n${detailItems}\n\nTotal: Rp ${totalFormat}`;
+    const estimatedProfit = tx.total - calculatedHpp - calculatedBebanOp;
+
+    const msg = `Tipe: ${labelTipe}\nKeterangan/Meja: ${tx.ident}\nTanggal: ${tx.tgl}\nMetode: ${tx.metode}\n\nRincian Pesanan:\n${detailItems}\n\n---------------------------------\nTotal Belanja: Rp ${totalFormat}\nModal Bahan (HPP): Rp ${calculatedHpp.toLocaleString('id-ID')}\nBeban Ops: Rp ${calculatedBebanOp.toLocaleString('id-ID')}\nEstimasi Untung: Rp ${estimatedProfit.toLocaleString('id-ID')}`;
     await popup('alert', msg, `Detail Transaksi`);
   };
 
@@ -221,9 +236,32 @@ export default function TabLaporan() {
                     <td style={{ fontSize: '12px', cursor: 'pointer' }} onClick={() => tampilkanDetailTransaksi(tx)}>
                       <strong>[{labelTipe}]</strong> {tx.ident}
                       {tx.items && tx.items.length > 0 && (
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                          {tx.items.map((it: any) => `${it.name} (x${it.qty})`).join(', ')}
-                        </div>
+                        <>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            {tx.items.map((it: any) => `${it.name} (x${it.qty})`).join(', ')}
+                          </div>
+                          {(() => {
+                            let itemHpp = tx.hppTotal || 0;
+                            let itemBebanOp = tx.bebanOpTotal || 0;
+                            if (itemHpp === 0 || itemBebanOp === 0) {
+                              tx.items.forEach((it: any) => {
+                                const m = useStore.getState().menu.find((x: any) => x.id === it.id || x.name === it.name);
+                                if (m) {
+                                  if (itemHpp === 0) itemHpp += (m.hppBahan || 0) * it.qty;
+                                  if (itemBebanOp === 0) itemBebanOp += (m.hppOp || 0) * it.qty;
+                                }
+                              });
+                            }
+                            if (itemHpp > 0 || itemBebanOp > 0) {
+                              return (
+                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2.5px', fontStyle: 'italic' }}>
+                                  Modal Bahan: Rp {itemHpp.toLocaleString('id-ID')} | Beban Ops: Rp {itemBebanOp.toLocaleString('id-ID')}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </>
                       )}
                     </td>
                     <td className={colorClass} style={{ fontSize: '12px', fontWeight: 'bold' }}>Rp {tx.total.toLocaleString('id-ID')}</td>

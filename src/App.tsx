@@ -72,7 +72,7 @@ export default function App() {
     return () => window.removeEventListener('navToKasir', handleNav);
   }, []);
 
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxWULRD1LvciKmT38QIDMH9YnQUz9iPUq9d9KtlAJuHNne-Q4VVHvnicNmjkKLtr_TR/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbx7uAVZm6WykxTGh78eQxrUysH9LM4Xu_NBHZs-dQexCrpq-JexIEmu0Z2-lPC43N2G/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
 
   const syncToSheets = async (showPrompt = true) => {
     if (!GAS_URL) {
@@ -92,7 +92,9 @@ export default function App() {
           stokData: state.stokData,
           bebanAktif: state.bebanAktif,
           keuangan: state.keuangan,
-          transaksiList: state.transaksiList
+          transaksiList: state.transaksiList,
+          hutangList: state.hutangList,
+          stokHistory: state.stokHistory
         }
       };
 
@@ -172,15 +174,7 @@ export default function App() {
         const d = result.data;
         if (d.toko) setToko({ nama: d.toko.nama || '', logoBase64: d.toko.logoBase64 || null });
         if (d.menu) {
-          const currentMenu = useStore.getState().menu;
-          const mergedMenu = d.menu.map((pulledM: any) => {
-            const existing = currentMenu.find(m => m.id === pulledM.id);
-            if (existing) {
-              return { ...pulledM, resep: existing.resep, hppBahan: existing.hppBahan, hppOp: existing.hppOp };
-            }
-            return pulledM;
-          });
-          useStore.getState().setFullState({ menu: mergedMenu });
+          useStore.getState().setFullState({ menu: d.menu });
         }
         if (d.stokData) useStore.getState().setStokData(d.stokData);
         if (d.bebanAktif) {
@@ -204,6 +198,8 @@ export default function App() {
           });
         }
         if (d.transaksiList) useStore.getState().setFullState({ transaksiList: d.transaksiList });
+        if (d.hutangList) useStore.getState().updateHutang(d.hutangList);
+        if (d.stokHistory) useStore.getState().setFullState({ stokHistory: d.stokHistory });
         
         if (showPrompt) await popup('alert', 'Data berhasil ditarik dari Spreadsheet!', "Berhasil");
       } else {
