@@ -22,6 +22,49 @@ export default function App() {
   const [activePrintReport, setActivePrintReport] = useState<any | null>(null);
   const { popup } = useAppModal();
   
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
+    if (isStandalone) {
+      setShowInstallBanner(false);
+    } else {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (isIOS) {
+        setShowInstallBanner(true);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      }
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+    } else {
+      await popup('alert', 
+        'Untuk menginstal di HP Anda:\n\n📱 Android (Chrome/Edge):\nKlik tombol menu titik tiga di pojok kanan atas browser lalu pilih "Instal Aplikasi" atau "Tambahkan ke Layar Utama".\n\n🍎 iOS / iPhone / iPad (Safari):\n1. Klik tombol "Share" (Bagikan - ikon kotak panah ke atas) di bagian bawah browser.\n2. Gulir ke bawah lalu klik "Tambahkan ke Layar Utama" (Add to Home Screen).',
+        'Petunjuk Instalasi'
+      );
+    }
+  };
+  
   const { toko, setToko, menu, cart, stokData, transaksiList, hutangList, bebanAktif, keuangan } = useStore();
 
   const isInitialMount = useRef(true);
@@ -431,6 +474,99 @@ export default function App() {
         </div>
       )}
 
+      {showInstallBanner && (
+        <div className="no-print" style={{ 
+          margin: '15px 16px 5px 16px', 
+          padding: '16px', 
+          background: 'var(--clay-bg)', 
+          boxShadow: 'var(--btn-shadow-out)', 
+          border: 'var(--clay-border)', 
+          borderRadius: '24px', 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: '12px',
+          animation: 'fadeIn 0.5s ease',
+          position: 'relative',
+          zIndex: 999
+        }}>
+          <button 
+            onClick={() => setShowInstallBanner(false)} 
+            style={{ 
+              position: 'absolute', 
+              top: '12px', 
+              right: '12px', 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'var(--text-muted)', 
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              padding: '4px 8px'
+            }}
+          >
+            ✕
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', paddingRight: '20px' }}>
+            <div style={{ 
+              background: 'var(--input-bg)', 
+              boxShadow: 'var(--clay-shadow-in)', 
+              border: 'var(--input-border)',
+              borderRadius: '16px', 
+              width: '48px', 
+              height: '48px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--blue)">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-main)' }}>Pasang Smart POS Warkop</h4>
+              <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                Instal aplikasi ini di HP Anda untuk akses cepat, offline, dan performa yang lebih stabil.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+            <button 
+              className="btn bg-blue" 
+              onClick={handleInstallClick}
+              style={{ 
+                flex: 1, 
+                padding: '10px 14px', 
+                fontSize: '12px', 
+                borderRadius: '12px',
+                color: 'var(--text-main)',
+                backgroundColor: 'var(--orange)',
+                fontWeight: 'bold',
+                border: 'none',
+                boxShadow: 'var(--btn-shadow-out)'
+              }}
+            >
+              Instal Sekarang
+            </button>
+            <button 
+              className="btn" 
+              onClick={() => setShowInstallBanner(false)}
+              style={{ 
+                padding: '10px 14px', 
+                fontSize: '12px', 
+                borderRadius: '12px',
+                color: 'var(--text-muted)',
+                background: 'transparent',
+                border: 'var(--input-border)',
+                boxShadow: 'none'
+              }}
+            >
+              Nanti Saja
+            </button>
+          </div>
+        </div>
+      )}
+
       {(activeTab === 'meja') && (
         <header>
           <div className="search-box">
@@ -520,7 +656,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex-between">
+              <div className="flex-between" style={{ marginBottom: '15px' }}>
                 <span style={{ fontWeight: 600, fontSize: '14px' }}>Tema Gelap (Dark Mode)</span>
                 <button 
                   className="btn bg-blue" 
@@ -531,8 +667,18 @@ export default function App() {
                 >
                   Alihkan Tema
                 </button>
-                  </div>
-                </motion.div>
+              </div>
+
+              <div className="flex-between">
+                <span style={{ fontWeight: 600, fontSize: '14px' }}>Aplikasi HP (PWA)</span>
+                <button 
+                  className="btn bg-green" 
+                  onClick={handleInstallClick}
+                >
+                  Pasang Aplikasi
+                </button>
+              </div>
+            </motion.div>
               )}
               
               {activeSubTab === 'sub-menu' && (

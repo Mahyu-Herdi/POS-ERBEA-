@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { useAppModal } from './ModalContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function TabMasterMenu() {
   const { stokData, tempResep, setTempResep, menu, setMenu, bebanAktif } = useStore();
   const [hppNama, setHppNama] = useState('');
   const [resepSelect, setResepSelect] = useState('');
+  const [isResepOpen, setIsResepOpen] = useState(false);
   const [resepQty, setResepQty] = useState('');
   const [hppBahan, setHppBahan] = useState(0);
   const [hppOp, setHppOp] = useState('');
@@ -90,6 +92,7 @@ export default function TabMasterMenu() {
   const jualNum = parseAngka(hppJual);
   const profit = jualNum - (hppBahan + opNum);
   const margin = jualNum > 0 ? (profit / jualNum) * 100 : 0;
+  const selectedStokItem = stokData.find(s => s.id === resepSelect);
 
   return (
     <>
@@ -99,13 +102,109 @@ export default function TabMasterMenu() {
       <input type="text" className="btn-input" placeholder="Cth: Kopi Arabika Susu" value={hppNama} onChange={e => setHppNama(e.target.value)} />
       
       <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginTop: '15px' }}>Master Resep Bahan Baku (Ditarik dari Data Stok)</label>
-      <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-        <select className="btn-input" style={{ margin: 0, flex: 2, fontSize: '13px' }} value={resepSelect} onChange={e => setResepSelect(e.target.value)}>
-          <option value="">-- Pilih Komponen Bahan --</option>
-          {stokData.map(s => (
-            <option key={s.id} value={s.id}>{s.nama} (Rp {s.hargaPerUnit}/{s.unit})</option>
-          ))}
-        </select>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '5px', zIndex: 120, position: 'relative' }}>
+        <div style={{ flex: 2, position: 'relative' }}>
+          <div 
+            onClick={() => setIsResepOpen(!isResepOpen)}
+            className="btn-input" 
+            style={{ 
+              margin: 0, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              padding: '12px 16px',
+              boxShadow: isResepOpen ? 'var(--clay-shadow-out)' : 'var(--clay-shadow-in)',
+              border: isResepOpen ? 'var(--clay-border)' : 'var(--input-border)',
+              fontSize: '13px',
+              height: '100%',
+              minHeight: '46px'
+            }}
+          >
+            <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {selectedStokItem ? `${selectedStokItem.nama} (Rp ${selectedStokItem.hargaPerUnit}/${selectedStokItem.unit})` : '-- Pilih Komponen Bahan --'}
+            </span>
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ transform: isResepOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0 }}>
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <AnimatePresence>
+            {isResepOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '6px',
+                  background: 'var(--clay-bg)',
+                  boxShadow: 'var(--clay-shadow-out)',
+                  border: 'var(--clay-border)',
+                  borderRadius: '16px',
+                  padding: '6px',
+                  zIndex: 200,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  maxHeight: '220px',
+                  overflowY: 'auto'
+                }}
+              >
+                <div
+                  onClick={() => {
+                    setResepSelect('');
+                    setIsResepOpen(false);
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    color: 'var(--text-muted)',
+                    background: resepSelect === '' ? 'var(--input-bg)' : 'transparent',
+                    transition: 'background 0.2s'
+                  }}
+                >
+                  -- Pilih Komponen Bahan --
+                </div>
+                {stokData.map(s => (
+                  <div
+                    key={s.id}
+                    onClick={() => {
+                      setResepSelect(s.id);
+                      setIsResepOpen(false);
+                    }}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: resepSelect === s.id ? 'var(--input-bg)' : 'transparent',
+                      color: 'var(--text-main)',
+                      transition: 'background 0.2s'
+                    }}
+                  >
+                    <span>{s.nama} (Rp {s.hargaPerUnit}/{s.unit})</span>
+                    {resepSelect === s.id && (
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--blue)" strokeWidth="3" fill="none">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    )}
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <input type="number" step="any" className="btn-input" style={{ margin: 0, flex: 1, fontSize: '13px' }} placeholder="Jumlah" value={resepQty} onChange={e => setResepQty(e.target.value)} />
         <button className="btn bg-blue" style={{ margin: 0, padding: '12px 16px' }} onClick={tambahBahanKeResep}>+</button>
       </div>

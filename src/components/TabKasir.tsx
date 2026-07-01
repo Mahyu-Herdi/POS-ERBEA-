@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { useAppModal } from './ModalContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function TabKasir() {
   const { menu, cart, addToCart, updateCartQty, toggleCartBayar, setOrderMode, orderMode, mejaAktif, setMejaAktif, totalMeja, addTransaksi, keuangan, updateKeuangan, stokData, updateStok, addStokHistory, addHutang, toko } = useStore();
@@ -8,6 +9,7 @@ export default function TabKasir() {
   const [identifier, setIdentifier] = useState('');
   const [diskon, setDiskon] = useState('0');
   const [metodeBayar, setMetodeBayar] = useState('Cash');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [uangBayar, setUangBayar] = useState('');
   const [showPilihMeja, setShowPilihMeja] = useState(false);
   const { popup } = useAppModal();
@@ -293,11 +295,91 @@ export default function TabKasir() {
               <strong>Total Akhir</strong> <strong>Rp {total.toLocaleString('id-ID')}</strong>
             </div>
 
-            <select className="btn-input" style={{ marginTop: '15px' }} value={metodeBayar} onChange={e => setMetodeBayar(e.target.value)}>
-              <option value="Cash">Tunai / Cash</option>
-              <option value="QRIS">QRIS Dinamis</option>
-              <option value="Hutang">Kasbon / Hutang</option>
-            </select>
+            <div style={{ position: 'relative', marginTop: '15px', zIndex: 100 }}>
+              <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Metode Pembayaran</label>
+              <div 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="btn-input" 
+                style={{ 
+                  margin: 0, 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  padding: '12px 16px',
+                  boxShadow: isDropdownOpen ? 'var(--clay-shadow-out)' : 'var(--clay-shadow-in)',
+                  border: isDropdownOpen ? 'var(--clay-border)' : 'var(--input-border)'
+                }}
+              >
+                <span style={{ fontWeight: 600 }}>
+                  {metodeBayar === 'Cash' ? '💵 Tunai / Cash' : metodeBayar === 'QRIS' ? '📱 QRIS Dinamis' : '📝 Kasbon / Hutang'}
+                </span>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      marginTop: '6px',
+                      background: 'var(--clay-bg)',
+                      boxShadow: 'var(--clay-shadow-out)',
+                      border: 'var(--clay-border)',
+                      borderRadius: '16px',
+                      padding: '6px',
+                      zIndex: 110,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
+                    }}
+                  >
+                    {[
+                      { value: 'Cash', label: '💵 Tunai / Cash' },
+                      { value: 'QRIS', label: '📱 QRIS Dinamis' },
+                      { value: 'Hutang', label: '📝 Kasbon / Hutang' }
+                    ].map((opt) => (
+                      <div
+                        key={opt.value}
+                        onClick={() => {
+                          setMetodeBayar(opt.value);
+                          setIsDropdownOpen(false);
+                        }}
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          fontSize: '14px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          background: metodeBayar === opt.value ? 'var(--input-bg)' : 'transparent',
+                          color: 'var(--text-main)',
+                          transition: 'background 0.2s'
+                        }}
+                        className="dropdown-item"
+                      >
+                        <span>{opt.label}</span>
+                        {metodeBayar === opt.value && (
+                          <svg viewBox="0 0 24 24" width="16" height="16" stroke="var(--blue)" strokeWidth="3" fill="none">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {metodeBayar === 'Cash' && (
               <div style={{ marginTop: '20px' }}>
