@@ -72,7 +72,7 @@ export default function App() {
     return () => window.removeEventListener('navToKasir', handleNav);
   }, []);
 
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbx7uAVZm6WykxTGh78eQxrUysH9LM4Xu_NBHZs-dQexCrpq-JexIEmu0Z2-lPC43N2G/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbS6kuSV8aRWW767VJ1ZwhhDJhHr5oMVt2OUfsrEfgAhbAL6Uv9GuN-MU8MFTJ8l-NN/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
 
   const syncToSheets = async (showPrompt = true) => {
     if (!GAS_URL) {
