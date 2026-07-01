@@ -174,27 +174,52 @@ export default function App() {
         const d = result.data;
         if (d.toko) setToko({ nama: d.toko.nama || '', logoBase64: d.toko.logoBase64 || null });
         if (d.menu) {
-          useStore.getState().setFullState({ menu: d.menu });
+          const sanitizedMenu = d.menu.map((m: any) => ({
+            ...m,
+            harga: Number(m.harga) || 0,
+            hppBahan: Number(m.hppBahan) || 0,
+            hppOp: Number(m.hppOp) || 0,
+            resep: Array.isArray(m.resep) ? m.resep.map((r: any) => ({
+              ...r,
+              qty: Number(r.qty) || 0,
+              hargaPerUnit: Number(r.hargaPerUnit) || 0
+            })) : []
+          }));
+          useStore.getState().setFullState({ menu: sanitizedMenu });
         }
-        if (d.stokData) useStore.getState().setStokData(d.stokData);
+        if (d.stokData) {
+          const sanitizedStok = d.stokData.map((s: any) => ({
+            ...s,
+            sisa: Number(s.sisa) || 0,
+            hargaPerUnit: Number(s.hargaPerUnit) || 0
+          }));
+          useStore.getState().setStokData(sanitizedStok);
+        }
         if (d.bebanAktif) {
           const currentBeban = useStore.getState().bebanAktif;
           useStore.getState().updateBebanAktif({
-            aset: d.bebanAktif.aset || currentBeban.aset || [],
-            ops: d.bebanAktif.ops || currentBeban.ops || [],
-            target: d.bebanAktif.target || currentBeban.target || 1000,
-            perPorsi: d.bebanAktif.perPorsi || currentBeban.perPorsi || 0
+            aset: Array.isArray(d.bebanAktif.aset) ? d.bebanAktif.aset.map((a: any) => ({
+              ...a,
+              harga: Number(a.harga) || 0,
+              umur: Number(a.umur) || 0
+            })) : (currentBeban.aset || []),
+            ops: Array.isArray(d.bebanAktif.ops) ? d.bebanAktif.ops.map((o: any) => ({
+              ...o,
+              biaya: Number(o.biaya) || 0
+            })) : (currentBeban.ops || []),
+            target: typeof d.bebanAktif.target === 'number' ? d.bebanAktif.target : (Number(d.bebanAktif.target) || currentBeban.target || 1000),
+            perPorsi: typeof d.bebanAktif.perPorsi === 'number' ? d.bebanAktif.perPorsi : (Number(d.bebanAktif.perPorsi) || currentBeban.perPorsi || 0)
           });
         }
         if (d.keuangan) {
           const currentKeuangan = useStore.getState().keuangan;
           useStore.getState().updateKeuangan({
-            masuk: typeof d.keuangan.masuk === 'number' ? d.keuangan.masuk : currentKeuangan.masuk,
-            keluarOp: typeof d.keuangan.keluarOp === 'number' ? d.keuangan.keluarOp : currentKeuangan.keluarOp,
-            keluarStok: typeof d.keuangan.keluarStok === 'number' ? d.keuangan.keluarStok : currentKeuangan.keluarStok,
-            prive: typeof d.keuangan.prive === 'number' ? d.keuangan.prive : currentKeuangan.prive,
-            modalBahan: typeof d.keuangan.modalBahan === 'number' ? d.keuangan.modalBahan : currentKeuangan.modalBahan,
-            hppTerjual: typeof d.keuangan.hppTerjual === 'number' ? d.keuangan.hppTerjual : currentKeuangan.hppTerjual
+            masuk: typeof d.keuangan.masuk === 'number' ? d.keuangan.masuk : (Number(d.keuangan.masuk) || 0),
+            keluarOp: typeof d.keuangan.keluarOp === 'number' ? d.keuangan.keluarOp : (Number(d.keuangan.keluarOp) || 0),
+            keluarStok: typeof d.keuangan.keluarStok === 'number' ? d.keuangan.keluarStok : (Number(d.keuangan.keluarStok) || 0),
+            prive: typeof d.keuangan.prive === 'number' ? d.keuangan.prive : (Number(d.keuangan.prive) || 0),
+            modalBahan: typeof d.keuangan.modalBahan === 'number' ? d.keuangan.modalBahan : (Number(d.keuangan.modalBahan) || 0),
+            hppTerjual: typeof d.keuangan.hppTerjual === 'number' ? d.keuangan.hppTerjual : (Number(d.keuangan.hppTerjual) || 0)
           });
         }
         if (d.transaksiList) useStore.getState().setFullState({ transaksiList: d.transaksiList });
