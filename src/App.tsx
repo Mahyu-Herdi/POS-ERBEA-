@@ -46,8 +46,7 @@ export default function App() {
     if (activePrintTx) {
       const timer = setTimeout(() => {
         window.print();
-        setActivePrintTx(null);
-      }, 500);
+      }, 800);
       return () => clearTimeout(timer);
     }
   }, [activePrintTx]);
@@ -56,8 +55,7 @@ export default function App() {
     if (activePrintReport) {
       const timer = setTimeout(() => {
         window.print();
-        setActivePrintReport(null);
-      }, 500);
+      }, 800);
       return () => clearTimeout(timer);
     }
   }, [activePrintReport]);
@@ -210,7 +208,13 @@ export default function App() {
 
       if (result.status === 'success' && result.data) {
         const d = result.data;
-        if (d.toko) setToko({ nama: d.toko.nama || '', logoBase64: d.toko.logoBase64 || null });
+        if (d.toko) {
+          const currentToko = useStore.getState().toko;
+          setToko({ 
+            nama: d.toko.nama || currentToko.nama || '', 
+            logoBase64: d.toko.logoBase64 || currentToko.logoBase64 || null 
+          });
+        }
         if (d.menu) {
           const sanitizedMenu = d.menu.map((m: any) => ({
             ...m,
@@ -296,7 +300,12 @@ export default function App() {
   };
 
   useEffect(() => {
-    document.body.classList.add('dark-mode');
+    const savedTheme = localStorage.getItem('pos_theme');
+    if (savedTheme === 'light') {
+      document.body.classList.remove('dark-mode');
+    } else {
+      document.body.classList.add('dark-mode');
+    }
     
     const initSyncAndPull = async () => {
       if (GAS_URL) {
@@ -351,7 +360,7 @@ export default function App() {
       }, 5000);
       return () => clearTimeout(timeout);
     }
-  }, [toko.nama, menu, stokData, transaksiList, hutangList, bebanAktif, keuangan]);
+  }, [toko.nama, toko.logoBase64, menu, stokData, transaksiList, hutangList, bebanAktif, keuangan]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -359,19 +368,57 @@ export default function App() {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      setToko({ logoBase64: event.target?.result as string });
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 150;
+        const MAX_HEIGHT = 150;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/png');
+          setToko({ logoBase64: compressedBase64 });
+        }
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
+
+  const isPrinting = !!(activePrintTx || activePrintReport);
 
   return (
     <div 
       className={document.body?.className || ''} 
       onTouchStart={handleTouchStart} 
       onTouchEnd={handleTouchEnd}
-      style={{ minHeight: '100vh', overflowX: 'hidden' }}
+      style={{ 
+        minHeight: '100vh', 
+        overflowX: 'hidden', 
+        background: isPrinting ? '#f3f4f6' : 'var(--bg-color)',
+        color: isPrinting ? '#1a202c' : 'var(--text-main)',
+        transition: 'background 0.3s ease'
+      }}
     >
-      <div id="main-app-content">
+      {!isPrinting && (
+        <div id="main-app-content">
         {isSaving && (
         <div className="modal-overlay active">
           <div className="clay-card modal-box" style={{ textAlign: 'center', margin: 'auto' }}>
@@ -449,7 +496,12 @@ export default function App() {
                 
                 {toko.logoBase64 && (
                   <div style={{ textAlign: 'center', marginTop: '15px' }}>
-                    <img src={toko.logoBase64} style={{ width: '80px', borderRadius: '10px', boxShadow: 'var(--clay-shadow-out)' }} alt="Logo" />
+                    <img 
+                      src={toko.logoBase64} 
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                      style={{ width: '80px', borderRadius: '10px', boxShadow: 'var(--clay-shadow-out)' }} 
+                      alt="Logo" 
+                    />
                   </div>
                 )}
               </div>
@@ -470,7 +522,15 @@ export default function App() {
 
               <div className="flex-between">
                 <span style={{ fontWeight: 600, fontSize: '14px' }}>Tema Gelap (Dark Mode)</span>
-                <button className="btn bg-blue" onClick={() => document.body.classList.toggle('dark-mode')}>Alihkan Tema</button>
+                <button 
+                  className="btn bg-blue" 
+                  onClick={() => {
+                    const isDark = document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('pos_theme', isDark ? 'dark' : 'light');
+                  }}
+                >
+                  Alihkan Tema
+                </button>
                   </div>
                 </motion.div>
               )}
@@ -524,12 +584,68 @@ export default function App() {
         </button>
       </nav>
       </div>
+      )}
+
+      {isPrinting && (
+        <div className="no-print" style={{ maxWidth: activePrintReport ? '850px' : '320px', margin: '20px auto 10px auto', display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px' }}>
+          <button 
+            className="btn" 
+            onClick={() => {
+              setActivePrintTx(null);
+              setActivePrintReport(null);
+            }} 
+            style={{ 
+              margin: 0, 
+              padding: '10px 16px', 
+              fontSize: '13px', 
+              background: '#ffffff', 
+              color: '#2d3748', 
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              cursor: 'pointer',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            ← Tutup & Kembali
+          </button>
+          <button 
+            className="btn bg-blue" 
+            onClick={() => window.print()} 
+            style={{ 
+              margin: 0, 
+              padding: '10px 20px', 
+              fontSize: '13px', 
+              color: '#ffffff', 
+              background: '#3b82f6',
+              boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            🖨️ Cetak / Simpan PDF
+          </button>
+        </div>
+      )}
 
       {activePrintTx && (
         <div id="printArea">
           <div className="print-center">
             {toko.logoBase64 && (
-              <img src={toko.logoBase64} className="print-logo" style={{ filter: 'grayscale(100%)', width: '50px', display: 'inline-block', marginBottom: '5px' }} />
+              <img 
+                src={toko.logoBase64} 
+                className="print-logo" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                style={{ width: '50px', display: 'inline-block', marginBottom: '5px' }} 
+              />
             )}
             <h3 style={{ margin: '5px 0', fontSize: '14px', fontWeight: 'bold' }}>{toko.nama || 'Toko Kita'}</h3>
             <div style={{ fontSize: '10px' }}>{activePrintTx.tgl}</div>
@@ -582,7 +698,11 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '3px solid #1e3a8a', paddingBottom: '15px', marginBottom: '25px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               {toko.logoBase64 && (
-                <img src={toko.logoBase64} style={{ width: '65px', height: '65px', objectFit: 'contain', borderRadius: '8px' }} />
+                <img 
+                  src={toko.logoBase64} 
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                  style={{ width: '65px', height: '65px', objectFit: 'contain', borderRadius: '8px' }} 
+                />
               )}
               <div>
                 <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e3a8a', margin: 0 }}>{toko.nama || 'Toko Kita'}</h1>
