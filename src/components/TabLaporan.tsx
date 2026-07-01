@@ -233,11 +233,11 @@ export default function TabLaporan() {
       <div className="clay-card">
         <h3 style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>Riwayat Transaksi & Arus Keuangan Komprehensif</h3>
         
-        <div className="flex-between"><span>Total Pemasukan:</span> <strong className="text-green">Rp {sumIn.toLocaleString('id-ID')}</strong></div>
-        <div className="flex-between"><span>Total Pengeluaran:</span> <strong className="text-red">Rp {sumOut.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between"><span>Total Pemasukan:</span> <strong className="text-green" style={{ fontWeight: 900 }}>Rp {sumIn.toLocaleString('id-ID')}</strong></div>
+        <div className="flex-between"><span>Total Pengeluaran:</span> <strong className="text-red" style={{ fontWeight: 900 }}>Rp {sumOut.toLocaleString('id-ID')}</strong></div>
         <div className="flex-between text-green font-bold" style={{ fontSize: '15px', marginBottom: '15px' }}>
           <span>Total Laba Bersih (Periode):</span>
-          <strong>Rp {bersihFiltered.toLocaleString('id-ID')}</strong>
+          <strong style={{ fontWeight: 900 }}>Rp {bersihFiltered.toLocaleString('id-ID')}</strong>
         </div>
         <hr style={{ border: 0, borderTop: '1px dashed rgba(163,177,198,0.4)', margin: '10px 0 15px 0' }} />
 

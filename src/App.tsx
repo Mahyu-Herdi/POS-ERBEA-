@@ -136,6 +136,9 @@ export default function App() {
 
       const response = await fetch(GAS_URL, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
         redirect: 'follow',
         body: JSON.stringify(payload)
       });
@@ -166,7 +169,11 @@ export default function App() {
       }
     } catch (error: any) {
       console.error(error);
-      if (showPrompt) await popup('alert', `Gagal sinkronisasi: ${error.message}`, "Gagal");
+      let errMsg = error.message;
+      if (errMsg === 'Failed to fetch') {
+        errMsg = 'CORS/Koneksi gagal. Pastikan Apps Script di-deploy "Execute as: Me" dan "Who has access: Anyone".';
+      }
+      if (showPrompt) await popup('alert', `Gagal sinkronisasi: ${errMsg}`, "Gagal");
     } finally {
       if (showPrompt) setIsSaving(false);
     }
@@ -184,6 +191,9 @@ export default function App() {
       const payload = { type: 'PULL_ALL' };
       const response = await fetch(GAS_URL, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
         redirect: 'follow',
         body: JSON.stringify(payload)
       });
@@ -293,7 +303,11 @@ export default function App() {
       }
     } catch (error: any) {
       console.error(error);
-      if (showPrompt) await popup('alert', `Gagal menarik data: ${error.message}`, "Gagal");
+      let errMsg = error.message;
+      if (errMsg === 'Failed to fetch') {
+        errMsg = 'CORS/Koneksi gagal. Pastikan Apps Script di-deploy "Execute as: Me" dan "Who has access: Anyone".';
+      }
+      if (showPrompt) await popup('alert', `Gagal menarik data: ${errMsg}`, "Gagal");
     } finally {
       if (showPrompt) setIsSaving(false);
     }

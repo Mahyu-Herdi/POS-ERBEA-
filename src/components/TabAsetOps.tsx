@@ -81,8 +81,11 @@ export default function TabAsetOps() {
           ) : (
             bebanAktif.aset.map((a, i) => (
               <tr key={i}>
-                <td style={{ fontSize: '11px' }}>{a.nama}</td>
-                <td style={{ fontSize: '11px' }}>Rp {Math.round(a.harga / a.umur).toLocaleString('id-ID')}/bln</td>
+                <td style={{ fontSize: '11px' }}>
+                  <strong>{a.nama}</strong><br />
+                  <span style={{ color: 'var(--text-muted)' }}>Beli: Rp {(a.harga || 0).toLocaleString('id-ID')}</span>
+                </td>
+                <td style={{ fontSize: '11px', textAlign: 'right' }}>Rp {Math.round(a.harga / a.umur).toLocaleString('id-ID')}/bln</td>
                 <td><button className="btn bg-red" style={{ padding: '4px' }} onClick={() => hapusAset(i)}>x</button></td>
               </tr>
             ))

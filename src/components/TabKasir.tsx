@@ -246,8 +246,8 @@ export default function TabKasir() {
               ) : (
                 filteredMenu.map(m => (
                   <div key={m.id} className="btn" style={{ textAlign: 'left', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }} onClick={() => addToCart(m)}>
-                    <div style={{ fontSize: '13px', fontWeight: 700 }}>{m.name}</div>
-                    <div className="text-blue" style={{ fontSize: '12px' }}>Rp {m.harga.toLocaleString('id-ID')}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 900 }}>{m.name}</div>
+                    <div className="text-blue" style={{ fontSize: '12px', fontWeight: 900 }}>Rp {m.harga.toLocaleString('id-ID')}</div>
                   </div>
                 ))
               )}
@@ -267,15 +267,15 @@ export default function TabKasir() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <input type="checkbox" checked={c.bayar} onChange={() => toggleCartBayar(idx)} style={{ width: '20px', height: '20px' }} />
                       <div>
-                        <div style={{ fontSize: '13px', fontWeight: 700 }}>{c.name}</div>
-                        <div className="text-muted" style={{ fontSize: '11px', marginTop: '4px' }}>Rp {c.harga.toLocaleString('id-ID')}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 900 }}>{c.name}</div>
+                        <div className="text-muted" style={{ fontSize: '11px', marginTop: '4px', fontWeight: 900 }}>Rp {c.harga.toLocaleString('id-ID')}</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <button className="btn" style={{ padding: '6px 12px', borderRadius: '10px' }} onClick={() => updateCartQty(idx, -1)}>
                         <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                       </button>
-                      <strong style={{ fontSize: '15px', minWidth: '20px', textAlign: 'center' }}>{c.qty}</strong>
+                      <strong style={{ fontSize: '15px', minWidth: '20px', textAlign: 'center', fontWeight: 900 }}>{c.qty}</strong>
                       <button className="btn" style={{ padding: '6px 12px', borderRadius: '10px' }} onClick={() => updateCartQty(idx, 1)}>
                         <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                       </button>
@@ -285,14 +285,14 @@ export default function TabKasir() {
               )}
             </div>
             
-            <div className="flex-between"><span>Subtotal</span> <strong>Rp {subtotal.toLocaleString('id-ID')}</strong></div>
+            <div className="flex-between"><span>Subtotal</span> <strong style={{ fontWeight: 900 }}>Rp {subtotal.toLocaleString('id-ID')}</strong></div>
             <div className="flex-between">
               <span>Diskon (Rp)</span>
-              <input type="text" inputMode="numeric" className="btn-input" style={{ width: '120px', textAlign: 'right', margin: 0 }} value={diskon} onChange={e => setDiskon(formatUang(e.target.value) || '0')} />
+              <input type="text" inputMode="numeric" className="btn-input font-extrabold" style={{ width: '120px', textAlign: 'right', margin: 0, fontWeight: 900 }} value={diskon} onChange={e => setDiskon(formatUang(e.target.value) || '0')} />
             </div>
             <hr style={{ border: 0, borderTop: '2px solid rgba(163,177,198,0.3)', margin: '15px 0' }} />
             <div className="flex-between text-blue" style={{ fontSize: '20px' }}>
-              <strong>Total Akhir</strong> <strong>Rp {total.toLocaleString('id-ID')}</strong>
+              <strong style={{ fontWeight: 900 }}>Total Akhir</strong> <strong style={{ fontWeight: 900 }}>Rp {total.toLocaleString('id-ID')}</strong>
             </div>
 
             <div style={{ position: 'relative', marginTop: '15px', zIndex: 100 }}>
