@@ -39,7 +39,7 @@ export default function TabKasir() {
   const subtotal = cart.reduce((acc, c) => acc + (c.bayar ? c.harga * c.qty : 0), 0);
   const diskonNum = parseAngka(diskon);
   const total = Math.max(0, subtotal - diskonNum);
-  const uang = parseAngka(uangBayar);
+  const uang = uangBayar.trim() === '' ? total : parseAngka(uangBayar);
   const kembalian = Math.max(0, uang - total);
 
   const setMode = (mode: string) => {
@@ -135,6 +135,8 @@ export default function TabKasir() {
       tipe: metodeBayar === 'Hutang' ? 'Kasbon' : 'Penjualan',
       ident,
       items: itemsPaid,
+      subtotal,
+      diskon: diskonNum,
       total,
       bayar: metodeBayar === 'Cash' ? uang : total,
       metode: metodeBayar,
@@ -457,7 +459,7 @@ export default function TabKasir() {
               <div style={{ marginTop: '20px' }}>
                 <input type="text" inputMode="numeric" className="btn-input" placeholder="Uang Dibayar (Cash)" value={uangBayar} onChange={e => setUangBayar(formatUang(e.target.value))} />
                 <div className="flex-between" style={{ marginTop: '15px' }}>
-                  <span>Kembalian</span> <strong className="text-green" style={{ fontSize: '18px' }}>Rp {kembalian.toLocaleString('id-ID')}</strong>
+                  <span>Kembalian</span> <strong className="text-green" style={{ fontSize: '18px' }}>{uangBayar.trim() === '' ? '-' : `Rp ${kembalian.toLocaleString('id-ID')}`}</strong>
                 </div>
               </div>
             )}

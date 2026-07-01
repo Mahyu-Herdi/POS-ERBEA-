@@ -270,6 +270,11 @@ export default function TabLaporan() {
                           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                             {tx.items.map((it: any) => `${it.name} (x${it.qty})`).join(', ')}
                           </div>
+                          {tx.diskon > 0 && (
+                            <div style={{ fontSize: '11px', color: 'var(--orange)', marginTop: '2px', fontWeight: 'bold' }}>
+                              Diskon: Rp {tx.diskon.toLocaleString('id-ID')}
+                            </div>
+                          )}
                           {(() => {
                             let itemHpp = tx.hppTotal || 0;
                             let itemBebanOp = tx.bebanOpTotal || 0;

@@ -753,8 +753,15 @@ export default function App() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>Subtotal</span>
-              <span>{activePrintTx.total.toLocaleString('id-ID')}</span>
+              <span>{(activePrintTx.subtotal || activePrintTx.total).toLocaleString('id-ID')}</span>
             </div>
+            
+            {activePrintTx.diskon > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Diskon</span>
+                <span>- {activePrintTx.diskon.toLocaleString('id-ID')}</span>
+              </div>
+            )}
             
             <div style={{ 
               display: 'flex', 
@@ -777,7 +784,7 @@ export default function App() {
             
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
               <span>Kembalian</span>
-              <span>{(activePrintTx.bayar - activePrintTx.total).toLocaleString('id-ID')}</span>
+              <span>{(activePrintTx.bayar - activePrintTx.total) === 0 ? '-' : (activePrintTx.bayar - activePrintTx.total).toLocaleString('id-ID')}</span>
             </div>
           </div>
           

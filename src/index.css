@@ -6,9 +6,9 @@
   --clay-bg: #875F43;
   --input-bg: #3E2B1F;
   --sub-card-bg: #4A3425;
-  --clay-shadow-out: 12px 12px 24px rgba(40, 20, 10, 0.8), -6px -6px 16px rgba(120, 85, 65, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
-  --clay-shadow-in: inset 8px 8px 16px rgba(40, 20, 10, 0.9), inset -4px -4px 10px rgba(120, 85, 65, 0.2);
-  --btn-shadow-out: 12px 12px 24px rgba(40, 20, 10, 0.8), -6px -6px 16px rgba(120, 85, 65, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.15);
+  --clay-shadow-out: 4px 4px 10px rgba(40, 20, 10, 0.4), -3px -3px 8px rgba(120, 85, 65, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+  --clay-shadow-in: inset 4px 4px 8px rgba(40, 20, 10, 0.5), inset -2px -2px 6px rgba(120, 85, 65, 0.15);
+  --btn-shadow-out: 3px 3px 6px rgba(40, 20, 10, 0.4), -2px -2px 5px rgba(120, 85, 65, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
   --text-main: #FFFFFF;
   --text-muted: #DFCCBF;
   --blue: #5CCFFF;
@@ -27,9 +27,9 @@ body.neutral-mode {
   --clay-bg: #F5EFEB;
   --input-bg: #DCD3C3;
   --sub-card-bg: #FCF9F2;
-  --clay-shadow-out: 6px 6px 12px rgba(185, 175, 160, 0.4), -4px -4px 10px rgba(255, 255, 255, 1);
-  --clay-shadow-in: inset 3px 3px 6px rgba(185, 175, 160, 0.4), inset -3px -3px 6px rgba(255, 255, 255, 1);
-  --btn-shadow-out: 5px 5px 10px rgba(185, 175, 160, 0.4), -4px -4px 8px rgba(255, 255, 255, 1);
+  --clay-shadow-out: 4px 4px 10px rgba(185, 175, 160, 0.4), -3px -3px 8px rgba(255, 255, 255, 0.8), inset 1px 1px 2px rgba(255, 255, 255, 0.8);
+  --clay-shadow-in: inset 4px 4px 8px rgba(185, 175, 160, 0.5), inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+  --btn-shadow-out: 3px 3px 6px rgba(185, 175, 160, 0.4), -2px -2px 5px rgba(255, 255, 255, 0.8), inset 1px 1px 2px rgba(255, 255, 255, 0.8);
   --text-main: #2D2A26;
   --text-muted: #8C857B;
   --blue: #0EA5E9;
@@ -47,9 +47,9 @@ body.dark-mode {
   --clay-bg: #38251A;
   --input-bg: #1D120C;
   --sub-card-bg: #281A12;
-  --clay-shadow-out: 12px 12px 24px rgba(15, 8, 5, 0.9), -6px -6px 16px rgba(70, 45, 30, 0.45), inset 2px 2px 4px rgba(255, 255, 255, 0.1);
-  --clay-shadow-in: inset 8px 8px 16px rgba(15, 8, 5, 0.95), inset -4px -4px 10px rgba(70, 45, 30, 0.2);
-  --btn-shadow-out: 12px 12px 24px rgba(15, 8, 5, 0.9), -6px -6px 16px rgba(70, 45, 30, 0.45), inset 2px 2px 4px rgba(255, 255, 255, 0.1);
+  --clay-shadow-out: 4px 4px 10px rgba(15, 8, 5, 0.7), -3px -3px 8px rgba(70, 45, 30, 0.3), inset 1px 1px 2px rgba(255, 255, 255, 0.05);
+  --clay-shadow-in: inset 4px 4px 8px rgba(15, 8, 5, 0.8), inset -2px -2px 6px rgba(70, 45, 30, 0.15);
+  --btn-shadow-out: 3px 3px 6px rgba(15, 8, 5, 0.7), -2px -2px 5px rgba(70, 45, 30, 0.3), inset 1px 1px 2px rgba(255, 255, 255, 0.05);
   --text-main: #FDF5E6;
   --text-muted: #BCA393;
   --blue: #70D6FF;
