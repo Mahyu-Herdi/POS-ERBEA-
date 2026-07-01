@@ -18,11 +18,30 @@ export default function App() {
   const [activeSubTab, setActiveSubTab] = useState('sub-sistem');
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activePrintTx, setActivePrintTx] = useState<any | null>(null);
   const { popup } = useAppModal();
   
   const { toko, setToko, menu, cart, stokData, transaksiList, hutangList, bebanAktif, keuangan } = useStore();
 
   const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    const handlePrint = (e: any) => {
+      setActivePrintTx(e.detail);
+    };
+    window.addEventListener('print-receipt', handlePrint);
+    return () => window.removeEventListener('print-receipt', handlePrint);
+  }, []);
+
+  useEffect(() => {
+    if (activePrintTx) {
+      const timer = setTimeout(() => {
+        window.print();
+        setActivePrintTx(null);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activePrintTx]);
 
   useEffect(() => {
     localStorage.setItem('activeTab', activeTab);
@@ -484,6 +503,57 @@ export default function App() {
           <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> Master
         </button>
       </nav>
+
+      {activePrintTx && (
+        <div id="printArea">
+          <div className="print-center">
+            {toko.logoBase64 && (
+              <img src={toko.logoBase64} className="print-logo" style={{ filter: 'grayscale(100%)', width: '50px', display: 'inline-block', marginBottom: '5px' }} />
+            )}
+            <h3 style={{ margin: '5px 0', fontSize: '14px', fontWeight: 'bold' }}>{toko.nama || 'Toko Kita'}</h3>
+            <div style={{ fontSize: '10px' }}>{activePrintTx.tgl}</div>
+            <div className="print-line"></div>
+          </div>
+          
+          <div style={{ fontSize: '11px', marginBottom: '5px' }}>
+            <strong>Pelanggan: {activePrintTx.ident || '-'}</strong>
+          </div>
+          <div className="print-line"></div>
+          
+          {activePrintTx.items.map((item: any, idx: number) => (
+            <div key={idx} style={{ marginBottom: '6px', fontSize: '11px' }}>
+              <div style={{ fontWeight: '500' }}>{item.nama}</div>
+              <div className="print-flex">
+                <span>{item.qty} x {item.harga.toLocaleString('id-ID')}</span>
+                <span>{(item.qty * item.harga).toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          ))}
+          
+          <div className="print-line"></div>
+          
+          <div className="print-flex" style={{ fontWeight: 'bold', fontSize: '12px' }}>
+            <span>TOTAL</span>
+            <span>Rp {activePrintTx.total.toLocaleString('id-ID')}</span>
+          </div>
+          
+          <div className="print-flex" style={{ fontSize: '11px' }}>
+            <span>BAYAR ({activePrintTx.metode})</span>
+            <span>Rp {activePrintTx.bayar.toLocaleString('id-ID')}</span>
+          </div>
+          
+          <div className="print-flex" style={{ fontSize: '11px' }}>
+            <span>KEMBALI</span>
+            <span>Rp {(activePrintTx.bayar - activePrintTx.total).toLocaleString('id-ID')}</span>
+          </div>
+          
+          <div className="print-line"></div>
+          
+          <div className="print-center" style={{ marginTop: '10px', fontSize: '11px' }}>
+            <div>Terima Kasih Atas Kunjungan Anda</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
