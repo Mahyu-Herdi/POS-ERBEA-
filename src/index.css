@@ -148,45 +148,60 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > section:nth-of-type(5) > div:nth-
 }
 
 
-#printArea, #printReportArea { display: none; }
+#printArea, #printReportArea { display: none !important; }
+
 @media print {
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
+  #main-app-content, 
+  .modal-overlay, 
+  header, 
+  nav, 
+  button,
+  .btn,
+  #clayModal,
+  .bottom-nav { 
+    display: none !important; 
   }
-  body * { visibility: hidden; }
-  #printArea, #printArea * { visibility: visible; }
-  #printReportArea, #printReportArea * { visibility: visible; }
+
+  html, body {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
   
   #printArea {
     display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 58mm;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 11px;
-    color: #000;
-    padding: 0;
-    margin: 0;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 58mm !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 11px !important;
+    color: #000000 !important;
+    padding: 10px !important;
+    margin: 0 !important;
   }
   
   #printReportArea {
     display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
     background: #ffffff !important;
     color: #1a202c !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    padding: 0px;
-    margin: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   }
   
-  .print-center { text-align: center; }
-  .print-line { border-bottom: 1px dashed #000; margin: 5px 0; }
-  .print-flex { display: flex; justify-content: space-between; }
-  .print-logo { filter: grayscale(100%); width: 50px; margin-bottom: 5px; }
+  .print-center { text-align: center !important; }
+  .print-line { border-bottom: 1px dashed #000000 !important; margin: 8px 0 !important; }
+  .print-flex { display: flex !important; justify-content: space-between !important; }
+  .print-logo { filter: grayscale(100%) !important; width: 50px !important; margin-bottom: 5px !important; display: inline-block !important; }
 }
