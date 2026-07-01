@@ -639,57 +639,129 @@ export default function App() {
       )}
 
       {activePrintTx && (
-        <div id="printArea">
-          <div className="print-center">
-            {toko.logoBase64 && (
+        <div id="printArea" style={{ 
+          width: '58mm', 
+          padding: '10px 12px', 
+          background: '#ffffff', 
+          color: '#000000', 
+          fontFamily: "'Courier New', Courier, monospace", 
+          fontSize: '11px',
+          lineHeight: '1.4'
+        }}>
+          {/* Header */}
+          <div className="print-center" style={{ marginBottom: '10px' }}>
+            {toko.logoBase64 ? (
               <img 
                 src={toko.logoBase64} 
                 className="print-logo" 
                 onError={(e) => { e.currentTarget.style.display = 'none'; }} 
-                style={{ width: '50px', display: 'inline-block', marginBottom: '5px' }} 
+                style={{ width: '45px', height: '45px', objectFit: 'contain', display: 'inline-block', marginBottom: '6px' }} 
               />
+            ) : (
+              <div style={{ fontSize: '20px', marginBottom: '4px' }}>☕</div>
             )}
-            <h3 style={{ margin: '5px 0', fontSize: '14px', fontWeight: 'bold' }}>{toko.nama || 'Toko Kita'}</h3>
-            <div style={{ fontSize: '10px' }}>{activePrintTx.tgl}</div>
-            <div className="print-line"></div>
-          </div>
-          
-          <div style={{ fontSize: '11px', marginBottom: '5px' }}>
-            <strong>Pelanggan: {activePrintTx.ident || '-'}</strong>
-          </div>
-          <div className="print-line"></div>
-          
-          {activePrintTx.items.map((item: any, idx: number) => (
-            <div key={idx} style={{ marginBottom: '6px', fontSize: '11px' }}>
-              <div style={{ fontWeight: '500' }}>{item.nama}</div>
-              <div className="print-flex">
-                <span>{item.qty} x {item.harga.toLocaleString('id-ID')}</span>
-                <span>{(item.qty * item.harga).toLocaleString('id-ID')}</span>
-              </div>
+            <h3 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {toko.nama || 'ERBEA COFFEE SPACE'}
+            </h3>
+            <div style={{ fontSize: '9px', color: '#333', textTransform: 'uppercase', marginBottom: '4px' }}>
+              Struk Pembayaran Resmi
             </div>
-          ))}
-          
-          <div className="print-line"></div>
-          
-          <div className="print-flex" style={{ fontWeight: 'bold', fontSize: '12px' }}>
-            <span>TOTAL</span>
-            <span>Rp {activePrintTx.total.toLocaleString('id-ID')}</span>
+            <div style={{ borderBottom: '1px double #000000', margin: '6px 0 8px 0' }}></div>
           </div>
           
-          <div className="print-flex" style={{ fontSize: '11px' }}>
-            <span>BAYAR ({activePrintTx.metode})</span>
-            <span>Rp {activePrintTx.bayar.toLocaleString('id-ID')}</span>
+          {/* Metadata */}
+          <div style={{ fontSize: '10px', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>WAKTU :</span>
+              <span style={{ textAlign: 'right' }}>{activePrintTx.tgl}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>PELANGGAN:</span>
+              <span style={{ textAlign: 'right', fontWeight: 'bold' }}>{activePrintTx.ident || 'Umum'}</span>
+            </div>
+            {activePrintTx.tipe && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>STATUS :</span>
+                <span style={{ textAlign: 'right', textTransform: 'uppercase' }}>{activePrintTx.tipe}</span>
+              </div>
+            )}
+          </div>
+
+          <div style={{ borderBottom: '1px dashed #000000', margin: '8px 0' }}></div>
+          
+          {/* Column Header (Only if items exist) */}
+          {activePrintTx.items && activePrintTx.items.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '10px', marginBottom: '6px', textTransform: 'uppercase' }}>
+              <span>Menu / Produk</span>
+              <span>Total (Rp)</span>
+            </div>
+          )}
+
+          {/* Items List */}
+          {activePrintTx.items && activePrintTx.items.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {activePrintTx.items.map((item: any, idx: number) => (
+                <div key={idx} style={{ fontSize: '11px' }}>
+                  <div style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                    {item.name || item.nama}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '6px', fontSize: '10px', color: '#111' }}>
+                    <span>
+                      {item.qty} x {item.harga.toLocaleString('id-ID')}
+                    </span>
+                    <span>
+                      {(item.qty * item.harga).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '10px 0', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+              {activePrintTx.tipe || 'Transaksi'}
+            </div>
+          )}
+          
+          <div style={{ borderBottom: '1px dashed #000000', margin: '8px 0' }}></div>
+          
+          {/* Totals & Payments */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Subtotal</span>
+              <span>{activePrintTx.total.toLocaleString('id-ID')}</span>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              fontWeight: 'bold', 
+              fontSize: '11px', 
+              padding: '4px 0', 
+              borderTop: '1px dashed #000000', 
+              borderBottom: '1px dashed #000000', 
+              margin: '3px 0' 
+            }}>
+              <span>GRAND TOTAL</span>
+              <span>Rp {activePrintTx.total.toLocaleString('id-ID')}</span>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Pembayaran ({activePrintTx.metode})</span>
+              <span>{activePrintTx.bayar.toLocaleString('id-ID')}</span>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+              <span>Kembalian</span>
+              <span>{(activePrintTx.bayar - activePrintTx.total).toLocaleString('id-ID')}</span>
+            </div>
           </div>
           
-          <div className="print-flex" style={{ fontSize: '11px' }}>
-            <span>KEMBALI</span>
-            <span>Rp {(activePrintTx.bayar - activePrintTx.total).toLocaleString('id-ID')}</span>
-          </div>
+          <div style={{ borderBottom: '1px double #000000', margin: '10px 0 8px 0' }}></div>
           
-          <div className="print-line"></div>
-          
-          <div className="print-center" style={{ marginTop: '10px', fontSize: '11px' }}>
-            <div>Terima Kasih Atas Kunjungan Anda</div>
+          {/* Footer Signature */}
+          <div className="print-center" style={{ fontSize: '9px', marginTop: '6px', textTransform: 'uppercase', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ fontWeight: 'bold' }}>Terima Kasih Atas Kunjungan Anda</div>
+            <div style={{ color: '#555' }}>Silahkan Datang Kembali!</div>
           </div>
         </div>
       )}
