@@ -138,7 +138,7 @@ export default function TabStok() {
                     <button className="btn bg-blue" style={{ padding: '4px 8px', borderRadius: '8px' }} onClick={() => handleTambahStok(i)}>
                       <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     </button>
-                    <button className="btn bg-orange" style={{ padding: '4px 8px', borderRadius: '8px', color: 'white', fontSize: '11px' }} onClick={() => handleHapusStok(i)}>Hapus</button>
+                    <button className="btn bg-orange" style={{ padding: '4px 8px', borderRadius: '8px', color: 'var(--text-main)', fontSize: '11px' }} onClick={() => handleHapusStok(i)}>Hapus</button>
                   </td>
                 </tr>
               ))

@@ -246,7 +246,7 @@ export default function TabLaporan() {
           <input type="date" className="btn-input" style={{ margin: 0, fontSize: '12px', flex: '1 1 120px' }} value={filterTxMulai} onChange={e => setFilterTxMulai(e.target.value)} />
           <input type="date" className="btn-input" style={{ margin: 0, fontSize: '12px', flex: '1 1 120px' }} value={filterTxAkhir} onChange={e => setFilterTxAkhir(e.target.value)} />
           <button className="btn bg-dim" style={{ margin: 0, padding: '10px 15px', fontSize: '12px', color: 'var(--text-main)' }} onClick={() => { setFilterTxMulai(''); setFilterTxAkhir(''); setSearchName(''); }}>Reset</button>
-          <button className="btn bg-blue" style={{ margin: 0, padding: '10px 15px', fontSize: '12px', color: 'white' }} onClick={handlePrintReport}>
+          <button className="btn bg-blue" style={{ margin: 0, padding: '10px 15px', fontSize: '12px', color: 'var(--text-main)' }} onClick={handlePrintReport}>
             <Printer size={14} /> Cetak PDF Laporan
           </button>
         </div>
@@ -302,7 +302,7 @@ export default function TabLaporan() {
                     <td className={colorClass} style={{ fontSize: '12px', fontWeight: 'bold' }}>Rp {tx.total.toLocaleString('id-ID')}</td>
                     <td style={{ fontSize: '11px' }}>{tx.metode}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <button className="btn bg-orange" style={{ padding: '4px 8px', borderRadius: '8px', fontSize: '11px', color: 'white' }} onClick={() => hapusTransaksi(tx)}>Hapus</button>
+                      <button className="btn bg-orange" style={{ padding: '4px 8px', borderRadius: '8px', fontSize: '11px', color: 'var(--text-main)' }} onClick={() => hapusTransaksi(tx)}>Hapus</button>
                     </td>
                   </tr>
                 );
@@ -351,7 +351,7 @@ export default function TabLaporan() {
           <h3 style={{ color: 'var(--orange)', marginBottom: '15px' }}>Tarik Prive (Kebutuhan Pribadi)</h3>
           <p style={{ fontSize: '11px', marginBottom: '10px' }}>Penarikan ini dicatat sebagai arus keluar & memotong laci kas.</p>
           <input type="text" inputMode="numeric" className="btn-input" placeholder="Nominal Tarik Prive (Rp)" value={inputPrive} onChange={e => setInputPrive(formatUang(e.target.value))} />
-          <button className="btn bg-orange" style={{ width: '100%', marginTop: '15px', color: 'white' }} onClick={tarikPrive}>Tarik Saldo Kas</button>
+          <button className="btn bg-orange" style={{ width: '100%', marginTop: '15px', color: 'var(--text-main)' }} onClick={tarikPrive}>Tarik Saldo Kas</button>
           <div className="flex-between" style={{ marginTop: '15px' }}><span>Sisa Uang Di Laci:</span> <strong style={{ fontSize: '18px' }}>Rp {sisaKasLaci.toLocaleString('id-ID')}</strong></div>
         </div>
       </div>
