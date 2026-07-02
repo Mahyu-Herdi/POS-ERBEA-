@@ -109,7 +109,7 @@ export default function App() {
     return () => window.removeEventListener('navToKasir', handleNav);
   }, []);
 
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwlDviJP2_xYtcAm-_j5Co84L3u0dJvaXOgkPj2gu-A1HusgG6Nx2EZV0X6c48B4qNt/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxZDpwIvVJ1J8JQkXVFZcRNG-b2SeRuWxbiLeNoP2oNpW-oawLvqWxJu7IeApMy8X0F/exec"; // TEMPEL URL WEB APP APPS SCRIPT ANDA DI SINI
 
   const syncToSheets = async (showPrompt = true) => {
     if (!GAS_URL) {
@@ -131,7 +131,8 @@ export default function App() {
           keuangan: state.keuangan,
           transaksiList: state.transaksiList,
           hutangList: state.hutangList,
-          stokHistory: state.stokHistory
+          stokHistory: state.stokHistory,
+          mejaAktif: state.mejaAktif
         }
       };
 
@@ -277,6 +278,7 @@ export default function App() {
         }
         if (d.transaksiList) useStore.getState().setFullState({ transaksiList: d.transaksiList });
         if (d.hutangList) useStore.getState().updateHutang(d.hutangList);
+        if (d.mejaAktif) useStore.getState().setFullState({ mejaAktif: d.mejaAktif });
         if (d.stokHistory) {
           const sanitizedHistory = d.stokHistory.map((h: any) => {
             const namaVal = h.nama || h.item || '';
